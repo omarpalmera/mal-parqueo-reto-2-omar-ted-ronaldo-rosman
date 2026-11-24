@@ -13,7 +13,7 @@ Cada integrante lidera un frente técnico y de campo, manteniendo trazabilidad i
 | **Analista de campo y privacidad** | Clasificación de las 8 cuadras en `datos/vias.json`, recorridos en hora pico y valle, georreferenciación de los 30 registros y anonimización de fotos (Ley 1581 de 2012). | *Integrante 1 (Completar nombre)* | `@usuario1` |
 | **Integrador del mapa e instrucciones para la IA** | Integración de Leaflet, mapa de calor `Leaflet.heat` sobre OpenStreetMap, capa de puntos individuales y diseño de prompts. | *Integrante 2 (Completar nombre)* | `@usuario2` |
 | **Ingeniero de lógica y clasificación** | Diseño del índice de criticidad (`js/criticidad.js`, `datos/criterios.json`), motor de filtros (`js/filtros.js`) y reglas de recomendación (`js/resumen.js`). | *Teddy Daniel Niño Rojas* | @elnigro1553 |
-| **Diseñador de interfaz y documentador** | Formulario de captura rápida (< 30 s), tablero responsivo, estilos de impresión `@media print`, bitácora de iteración y `README.md`. | *Integrante 4 (Completar nombre)* | `@usuario4` |
+| **Diseñador de interfaz y documentador** | Formulario de captura rápida (< 30 s), tablero responsivo, estilos de impresión `@media print`, bitácora de iteración y `README.md`. | *Omar Palmera* | `@usuario4` |
 
 > **Enlace al prototipo publicado (GitHub Pages):** `https://<usuario-o-org>.github.io/<nombre-del-repositorio>/` *(Actualizar al activar GitHub Pages)*.
 
