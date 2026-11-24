@@ -1,0 +1,909 @@
+/* ==========================================================================
+   styles.css - Mobile-First para Control de Mal Parqueo (Santa Marta)
+   ========================================================================== */
+
+:root {
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: #cbd5e1;
+  --primary: #0f4c81;
+  --primary-hover: #0a3861;
+  --secondary: #0f766e;
+  --alto: #dc2626;
+  --alto-bg: #fef2f2;
+  --medio: #d97706;
+  --medio-bg: #fffbeb;
+  --bajo: #16a34a;
+  --bajo-bg: #f0fdf4;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+code {
+  background: #e2e8f0;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.88em;
+}
+
+/* Header */
+.app-header {
+  background: linear-gradient(135deg, #0b3960 0%, #0f4c81 100%);
+  color: #ffffff;
+  padding: 1rem;
+}
+
+.header-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.inst-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  margin-bottom: 0.35rem;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: #dbeafe;
+}
+
+.header-badge {
+  background: #facc15;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Navegación por pestañas */
+.tabs-nav {
+  max-width: 1120px;
+  margin: 0.75rem auto 0;
+  padding: 0 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.tab-btn {
+  appearance: none;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.8rem 0.75rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  min-height: 48px;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+/* Contenedor principal */
+.app-main {
+  max-width: 1120px;
+  margin: 0.75rem auto 2rem;
+  padding: 0 0.75rem;
+}
+
+.vista-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.vista-panel[hidden] {
+  display: none;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.intro-card h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.12rem;
+}
+
+.intro-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* Formularios y botones táctiles */
+.captura-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.form-step {
+  margin: 0;
+}
+
+.form-step legend {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary);
+  padding: 0 0.3rem;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.field-group label,
+.group-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+select,
+input[type='datetime-local'] {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+}
+
+.helper-text {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* GPS y Mini-mapa */
+.gps-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.4rem 0 0.65rem;
+}
+
+.coords-pill {
+  font-size: 0.8rem;
+  background: #e2e8f0;
+  color: #1e293b;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+}
+
+#mini-map {
+  width: 100%;
+  height: 220px;
+  min-height: 220px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  z-index: 1;
+}
+
+.via-badge-wrap {
+  margin-top: 0.25rem;
+}
+
+.badge-via {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.badge-arterial {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-secundaria {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+/* Tarjetas táctiles para Categoría y Actor (< 30 s) */
+.touch-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.touch-option {
+  display: block;
+  cursor: pointer;
+}
+
+.touch-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.touch-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 0.85rem;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: #f8fafc;
+  min-height: 48px;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.touch-card strong {
+  font-size: 0.94rem;
+}
+
+.touch-card small {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.touch-option input:checked + .touch-card {
+  border-color: var(--primary);
+  background: #eff6ff;
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.criticidad-preview {
+  margin-top: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px dashed var(--border);
+  font-size: 0.9rem;
+}
+
+/* Foto y botones */
+.sr-only-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.foto-preview-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+#foto-preview {
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  font-size: 0.94rem;
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  min-height: 46px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: #ffffff;
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-danger {
+  background: var(--alto);
+  color: #ffffff;
+}
+
+.btn-small {
+  min-height: 36px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.btn-lg {
+  width: 100%;
+  min-height: 52px;
+  font-size: 1.02rem;
+}
+
+.submit-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.status-banner {
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status-ok {
+  background: var(--bajo-bg);
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.status-warning {
+  background: var(--medio-bg);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.status-error {
+  background: var(--alto-bg);
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+/* ==========================================================================
+   Tablero Operativo: KPIs, Filtros, Mapa Leaflet, Categorías y Top 5
+   ========================================================================== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.55rem;
+}
+
+.kpi-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-val {
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.kpi-lbl {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.kpi-alto {
+  background: var(--alto-bg);
+  border-color: #fecaca;
+}
+.kpi-alto .kpi-val {
+  color: var(--alto);
+}
+
+.kpi-medio {
+  background: var(--medio-bg);
+  border-color: #fde68a;
+}
+.kpi-medio .kpi-val {
+  color: var(--medio);
+}
+
+.kpi-bajo {
+  background: var(--bajo-bg);
+  border-color: #bbf7d0;
+}
+.kpi-bajo .kpi-val {
+  color: var(--bajo);
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.section-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.filtros-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+}
+
+.filtros-grid .field-group {
+  margin-top: 0;
+}
+
+/* Contenedor de Mapa Leaflet con altura explícita obligatoria */
+#map {
+  width: 100%;
+  min-height: 440px;
+  height: 55vh;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  z-index: 1;
+}
+
+.mapa-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.btn-layer {
+  background: #f1f5f9;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-layer.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.dot {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  margin-right: 0.25rem;
+  vertical-align: middle;
+}
+
+.dot-alto { background: var(--alto); }
+.dot-medio { background: var(--medio); }
+.dot-bajo { background: var(--bajo); }
+
+/* Popups de mapa */
+.map-popup {
+  font-size: 0.84rem;
+  max-width: 240px;
+}
+
+.map-popup p {
+  margin: 0.25rem 0;
+}
+
+.popup-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.popup-foto img {
+  margin-top: 0.35rem;
+  max-width: 100%;
+  max-height: 140px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.pill-nivel {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.15rem 0.48rem;
+  border-radius: 999px;
+}
+
+.pill-alto { background: #fee2e2; color: #991b1b; }
+.pill-medio { background: #fef3c7; color: #92400e; }
+.pill-bajo { background: #dcfce7; color: #166534; }
+
+/* Barras de categorías */
+.barras-categorias {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.cat-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  margin-bottom: 0.22rem;
+}
+
+.cat-bar-track {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.cat-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.cat-doble_fila { background: #ef4444; }
+.cat-bloqueo_rampa_cebra_paradero { background: #f59e0b; }
+.cat-invasion_anden { background: #0ea5e9; }
+
+/* Top 5 Resumen Operativo */
+.top5-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.top5-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: #ffffff;
+}
+
+.top5-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.top5-rank {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1rem;
+  min-width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top5-titulo {
+  flex: 1;
+}
+
+.top5-titulo h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.98rem;
+}
+
+.top5-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.badge-codigo,
+.badge-sector {
+  font-size: 0.74rem;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.top5-score {
+  text-align: right;
+  min-width: 64px;
+}
+
+.score-num {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.top5-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.82rem;
+  color: #334155;
+}
+
+.top5-recomendacion {
+  margin-top: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary);
+  background: #f8fafc;
+  font-size: 0.86rem;
+}
+
+.top5-recomendacion.rule-r1 {
+  border-left-color: var(--alto);
+  background: var(--alto-bg);
+}
+
+.top5-recomendacion.rule-r2 {
+  border-left-color: #0284c7;
+  background: #f0f9ff;
+}
+
+.top5-recomendacion.rule-r3 {
+  border-left-color: var(--medio);
+  background: var(--medio-bg);
+}
+
+.top5-recomendacion.rule-r4 {
+  border-left-color: var(--bajo);
+  background: var(--bajo-bg);
+}
+
+.rec-regla {
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: #334155;
+}
+
+.validacion-box {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.validacion-box h4 {
+  margin: 0 0 0.2rem;
+  font-size: 0.94rem;
+}
+
+.casos-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.caso-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+.io-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.6rem 0;
+}
+
+.app-footer {
+  max-width: 1120px;
+  margin: 0 auto 1.5rem;
+  padding: 0 0.75rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.print-header {
+  display: none;
+}
+
+.empty-state {
+  padding: 1rem;
+  text-align: center;
+  color: var(--muted);
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+/* ==========================================================================
+   Breakpoints Responsive (Tablet y Escritorio)
+   ========================================================================== */
+@media (min-width: 700px) {
+  .app-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .touch-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .touch-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .submit-bar {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .submit-bar .btn-lg {
+    flex: 1;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .filtros-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .casos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .filtros-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* ==========================================================================
+   Estilos de Impresión (@media print) - Resumen Operativo limpio (RF-05)
+   ========================================================================== */
+@media print {
+  body {
+    background: #ffffff;
+    color: #000000;
+    font-size: 11pt;
+  }
+
+  .app-header,
+  .tabs-nav,
+  #vista-captura,
+  .filtros-panel,
+  .mapa-section,
+  .io-panel,
+  #btn-imprimir,
+  .app-footer {
+    display: none !important;
+  }
+
+  #vista-tablero,
+  #vista-tablero[hidden] {
+    display: flex !important;
+  }
+
+  .print-header {
+    display: block !important;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .print-header h2 {
+    margin: 0 0 0.2rem;
+    font-size: 15pt;
+  }
+
+  .print-header p {
+    margin: 0;
+    font-size: 9.5pt;
+    color: #333333;
+  }
+
+  .app-main {
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #cbd5e1;
+    padding: 0.65rem;
+  }
+
+  .top5-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #94a3b8;
+  }
+
+  .top5-recomendacion {
+    border: 1px solid #cbd5e1;
+    border-left-width: 4px;
+  }
+}

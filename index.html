@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Mal Parqueo y Espacio Público · Santa Marta</title>
+  <meta name="description" content="Prototipo Reto No. 2 Unimagdalena: reporte ciudadano en menos de 30 segundos, índice de criticidad, mapa de calor y resumen operativo en Santa Marta.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="inst-tag">Universidad del Magdalena · Reto No. 2</span>
+        <h1>Movilidad y Espacio Público · Santa Marta</h1>
+        <p class="subtitle">Centro Histórico y Av. Campo Serrano · Ley 1581 de 2012 (sin placas ni rostros)</p>
+      </div>
+      <div class="header-badge" id="header-total-badge">0 reportes</div>
+    </div>
+  </header>
+
+  <nav class="tabs-nav" aria-label="Vistas principales">
+    <button type="button" id="tab-captura" class="tab-btn active" role="tab" aria-selected="true" aria-controls="vista-captura">
+      Captura Rápida (&lt; 30 s)
+    </button>
+    <button type="button" id="tab-tablero" class="tab-btn" role="tab" aria-selected="false" aria-controls="vista-tablero">
+      Tablero Operativo
+    </button>
+  </nav>
+
+  <main class="app-main">
+    <!-- =========================================================
+         VISTA 1: CAPTURA RÁPIDA (< 30 SEGUNDOS) - RF-01 / CU-01
+         ========================================================= -->
+    <section id="vista-captura" class="vista-panel" aria-labelledby="tab-captura">
+      <div class="card intro-card">
+        <h2>Nuevo reporte en vía o andén</h2>
+        <p>Registra una obstrucción en 3 pasos rápidos. No captures rostros ni placas de vehículos.</p>
+      </div>
+
+      <div id="captura-estado" class="status-banner" hidden></div>
+
+      <form id="form-captura" class="captura-form" novalidate>
+        <!-- Paso 1: Ubicación y Cuadra -->
+        <fieldset class="card form-step">
+          <legend>1. Ubicación y cuadra</legend>
+
+          <div class="gps-row">
+            <button type="button" id="btn-gps" class="btn btn-secondary">
+              Usar mi ubicación GPS
+            </button>
+            <span id="gps-coordenadas-texto" class="coords-pill">Centro Histórico / Cra 5</span>
+          </div>
+
+          <div id="mini-map" aria-label="Mini-mapa para fijar ubicación en Santa Marta"></div>
+          <p class="helper-text">Toca el mapa o arrastra el pin para ajustar el punto exacto.</p>
+
+          <input type="hidden" id="lat" name="lat" value="11.2421">
+          <input type="hidden" id="lng" name="lng" value="-74.2105">
+
+          <div class="field-group">
+            <label for="cuadra">Cuadra (clasificada automáticamente desde <code>vias.json</code>)</label>
+            <select id="cuadra" name="cuadra" required></select>
+            <div class="via-badge-wrap">
+              <span id="badge-tipo-via" class="badge-via badge-arterial">Vía arterial</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Paso 2: Categoría, Actor y Hora -->
+        <fieldset class="card form-step">
+          <legend>2. Tipo de obstrucción y actor</legend>
+
+          <div class="field-group">
+            <span class="group-label">Categoría de obstrucción</span>
+            <div class="touch-grid">
+              <label class="touch-option">
+                <input type="radio" name="categoria" value="doble_fila" checked>
+                <span class="touch-card">
+                  <strong>Doble fila / vía prohibida</strong>
+                  <small>Vehículo bloqueando carril de circulación</small>
+                </span>
+              </label>
+              <label class="touch-option">
+                <input type="radio" name="categoria" value="bloqueo_rampa_cebra_paradero">
+                <span class="touch-card">
+                  <strong>Rampa, cebra o paradero</strong>
+                  <small>Obstrucción a paso peatonal o acceso accesible</small>
+                </span>
+              </label>
+              <label class="touch-option">
+                <input type="radio" name="categoria" value="invasion_anden">
+                <span class="touch-card">
+                  <strong>Invasión de andén</strong>
+                  <small>Comercio, mercancía o motos sobre la acera</small>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <span class="group-label">Actor involucrado</span>
+            <div class="touch-grid touch-grid-2">
+              <label class="touch-option">
+                <input type="radio" name="actor" value="vehiculo_particular" checked>
+                <span class="touch-card">
+                  <strong>Vehículo particular</strong>
+                </span>
+              </label>
+              <label class="touch-option">
+                <input type="radio" name="actor" value="motocicleta">
+                <span class="touch-card">
+                  <strong>Motocicleta</strong>
+                </span>
+              </label>
+              <label class="touch-option">
+                <input type="radio" name="actor" value="vehiculo_carga">
+                <span class="touch-card">
+                  <strong>Vehículo de carga descargando</strong>
+                </span>
+              </label>
+              <label class="touch-option">
+                <input type="radio" name="actor" value="mobiliario_comercial">
+                <span class="touch-card">
+                  <strong>Mobiliario comercial</strong>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="fecha_hora">Fecha y hora del incidente</label>
+            <input type="datetime-local" id="fecha_hora" name="fecha_hora" required>
+          </div>
+
+          <div id="preview-criticidad" class="criticidad-preview">
+            Calculando criticidad estimada...
+          </div>
+        </fieldset>
+
+        <!-- Paso 3: Foto opcional anonimizada -->
+        <fieldset class="card form-step">
+          <legend>3. Evidencia fotográfica (opcional)</legend>
+          <div class="field-group">
+            <label for="foto" class="btn btn-outline file-btn">
+              Tomar o adjuntar foto anonimizada
+            </label>
+            <input type="file" id="foto" name="foto" accept="image/*" capture="environment" class="sr-only-file">
+            <p id="foto-info" class="helper-text">Opcional. Se redimensiona automáticamente a máx. 800 px (JPEG 0.7).</p>
+            <div class="foto-preview-box">
+              <img id="foto-preview" alt="Vista previa de evidencia comprimida" hidden>
+              <button type="button" id="btn-quitar-foto" class="btn btn-small btn-danger" hidden>Quitar foto</button>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="submit-bar">
+          <button type="submit" id="btn-enviar-reporte" class="btn btn-primary btn-lg">
+            Registrar reporte ahora
+          </button>
+          <button type="button" id="btn-ir-tablero" class="btn btn-outline">
+            Ir al Tablero Operativo
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- =========================================================
+         VISTA 2: TABLERO OPERATIVO - RF-03, RF-04, RF-05, RF-06
+         ========================================================= -->
+    <section id="vista-tablero" class="vista-panel" aria-labelledby="tab-tablero" hidden>
+      <div class="print-header">
+        <h2>Informe Operativo de Movilidad · Santa Marta</h2>
+        <p>Universidad del Magdalena · Reto No. 2 · Centro Histórico y Av. Campo Serrano</p>
+        <p id="print-fecha"></p>
+      </div>
+
+      <!-- Indicadores KPI -->
+      <section class="card kpi-section" aria-label="Indicadores de criticidad">
+        <div class="kpi-grid">
+          <div class="kpi-box">
+            <span class="kpi-val" id="kpi-total">0</span>
+            <span class="kpi-lbl">Reportes filtrados</span>
+          </div>
+          <div class="kpi-box kpi-alto">
+            <span class="kpi-val" id="kpi-alto">0</span>
+            <span class="kpi-lbl">Nivel Alto</span>
+          </div>
+          <div class="kpi-box kpi-medio">
+            <span class="kpi-val" id="kpi-medio">0</span>
+            <span class="kpi-lbl">Nivel Medio</span>
+          </div>
+          <div class="kpi-box kpi-bajo">
+            <span class="kpi-val" id="kpi-bajo">0</span>
+            <span class="kpi-lbl">Nivel Bajo</span>
+          </div>
+          <div class="kpi-box kpi-score">
+            <span class="kpi-val" id="kpi-puntaje">0</span>
+            <span class="kpi-lbl">Puntaje acumulado</span>
+          </div>
+        </div>
+        <p id="kpi-filtro-estado" class="helper-text"></p>
+      </section>
+
+      <!-- Filtros dinámicos (RF-04 / CU-02) -->
+      <section class="card filtros-panel" aria-label="Filtros del tablero">
+        <div class="section-head">
+          <h3>Filtros dinámicos</h3>
+          <button type="button" id="btn-limpiar-filtros" class="btn btn-small btn-outline">Limpiar filtros</button>
+        </div>
+        <div class="filtros-grid">
+          <div class="field-group">
+            <label for="filtro-sector">Sector</label>
+            <select id="filtro-sector">
+              <option value="todos">Todos los sectores</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="filtro-cuadra">Cuadra</label>
+            <select id="filtro-cuadra">
+              <option value="todas">Todas las cuadras</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="filtro-franja">Franja horaria</label>
+            <select id="filtro-franja">
+              <option value="todas">Todas (Pico y Valle)</option>
+              <option value="pico">Hora Pico</option>
+              <option value="valle">Hora Valle</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="filtro-categoria">Categoría</label>
+            <select id="filtro-categoria">
+              <option value="todas">Todas las categorías</option>
+              <option value="doble_fila">Doble fila / vía prohibida</option>
+              <option value="bloqueo_rampa_cebra_paradero">Bloqueo rampa, cebra o paradero</option>
+              <option value="invasion_anden">Invasión de andén</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="filtro-actor">Actor</label>
+            <select id="filtro-actor">
+              <option value="todos">Todos los actores</option>
+              <option value="vehiculo_particular">Vehículo particular</option>
+              <option value="motocicleta">Motocicleta</option>
+              <option value="vehiculo_carga">Vehículo de carga descargando</option>
+              <option value="mobiliario_comercial">Mobiliario comercial</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mapa Leaflet + Leaflet.heat (RF-03) -->
+      <section class="card mapa-section" aria-label="Mapa de calor y puntos">
+        <div class="section-head">
+          <h3>Mapa de calor y puntos individuales</h3>
+          <div class="mapa-controls" role="group" aria-label="Capas del mapa">
+            <button type="button" class="btn btn-small btn-layer active" data-modo-capa="ambas">Ambas capas</button>
+            <button type="button" class="btn btn-small btn-layer" data-modo-capa="calor">Solo calor</button>
+            <button type="button" class="btn btn-small btn-layer" data-modo-capa="puntos">Solo puntos</button>
+          </div>
+        </div>
+        <div id="map" aria-label="Mapa operativo de Santa Marta"></div>
+        <div class="map-legend">
+          <span><i class="dot dot-alto"></i> Nivel Alto</span>
+          <span><i class="dot dot-medio"></i> Nivel Medio</span>
+          <span><i class="dot dot-bajo"></i> Nivel Bajo</span>
+          <span class="legend-note">Intensidad del mapa de calor ponderada por puntaje de criticidad.</span>
+        </div>
+      </section>
+
+      <!-- Distribución porcentual por categoría (CU-02) -->
+      <section class="card categorias-section" aria-label="Distribución por categoría">
+        <h3>Porcentaje por categoría de obstrucción</h3>
+        <div id="barras-categorias" class="barras-categorias"></div>
+      </section>
+
+      <!-- Resumen Operativo: Top 5 cuadras + Reglas + Imprimir (RF-05 / CU-03) -->
+      <section id="panel-resumen-operativo" class="card resumen-section" aria-label="Resumen operativo Top 5">
+        <div class="section-head">
+          <div>
+            <h3>Resumen Operativo: Top 5 Cuadras Críticas</h3>
+            <p class="helper-text">Ordenadas por puntaje acumulado de criticidad. Cada recomendación indica explícitamente la regla que la produjo.</p>
+          </div>
+          <button type="button" id="btn-imprimir" class="btn btn-primary btn-small">
+            Imprimir Resumen
+          </button>
+        </div>
+
+        <div id="top5-container"></div>
+
+        <div class="validacion-box">
+          <h4>Verificación en vivo del índice de criticidad (RF-02)</h4>
+          <p class="helper-text">Cálculo automático leyendo <code>datos/criterios.json</code> y <code>datos/vias.json</code>:</p>
+          <div id="validacion-manual-casos"></div>
+        </div>
+      </section>
+
+      <!-- Exportar / Importar JSON (RF-06 / CU-04) -->
+      <section id="panel-export-import" class="card io-panel" aria-label="Exportar e importar reportes">
+        <h3>Sincronización de campo (Exportar / Importar JSON)</h3>
+        <p class="helper-text">
+          Reúne reportes levantados desde varios celulares en un solo tablero sin duplicados (comparación estricta por <code>id</code>).
+        </p>
+        <div class="io-actions">
+          <button type="button" id="btn-exportar-json" class="btn btn-secondary">
+            Exportar reportes (.json)
+          </button>
+          <label for="input-importar-json" class="btn btn-outline file-btn">
+            Importar archivos (.json)
+          </label>
+          <input type="file" id="input-importar-json" accept=".json,application/json" multiple class="sr-only-file">
+        </div>
+        <div id="io-estado" class="status-banner" hidden></div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Universidad del Magdalena · Introducción a la Ingeniería de Sistemas 2026-2 · Prototipo Reto No. 2 (Datos locales en navegador)</p>
+  </footer>
+
+  <!-- Leaflet JS debe cargarse estrictamente antes de leaflet-heat.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <!-- Módulos de aplicación en orden de dependencia -->
+  <script src="js/criticidad.js"></script>
+  <script src="js/filtros.js"></script>
+  <script src="js/resumen.js"></script>
+  <script src="js/mapa.js"></script>
+  <script src="js/captura.js"></script>
+</body>
+</html>

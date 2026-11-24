@@ -1,0 +1,25 @@
+{
+  "categoria": {
+    "doble_fila": 3,
+    "bloqueo_rampa_cebra_paradero": 3,
+    "invasion_anden": 2
+  },
+  "via": {
+    "arterial": 3,
+    "secundaria": 1
+  },
+  "franja": {
+    "pico": 3,
+    "valle": 1
+  },
+  "horas_pico": [
+    "06:30-08:30",
+    "11:30-14:00",
+    "17:00-19:30"
+  ],
+  "niveles": {
+    "Bajo": [0, 4],
+    "Medio": [5, 6],
+    "Alto": [7, 9]
+  }
+}
