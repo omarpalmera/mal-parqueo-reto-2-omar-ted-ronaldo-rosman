@@ -130,6 +130,47 @@
   }
 
   /**
+   * Normaliza una fecha/hora a precisión de minuto ("YYYY-MM-DDTHH:MM") para comparación.
+   * @param {string} fechaHoraStr
+   * @returns {string}
+   */
+  function normalizarMinuto(fechaHoraStr) {
+    if (typeof fechaHoraStr !== 'string') return '';
+    return fechaHoraStr.trim().replace(' ', 'T').slice(0, 16);
+  }
+
+  /**
+   * Verifica si ya existe un reporte idéntico en contenido (misma ubicación, cuadra,
+   * categoría, actor y minuto) para impedir envíos repetidos sin cambiar ningún dato.
+   *
+   * @param {Object} candidato
+   * @param {Array} listaExistentes
+   * @returns {boolean}
+   */
+  function esReporteDuplicado(candidato, listaExistentes) {
+    if (!candidato || !Array.isArray(listaExistentes)) return false;
+    var fechaCand = normalizarMinuto(candidato.fecha_hora);
+    var latCand = Number(candidato.lat).toFixed(5);
+    var lngCand = Number(candidato.lng).toFixed(5);
+
+    for (var i = 0; i < listaExistentes.length; i++) {
+      var rep = listaExistentes[i];
+      if (!rep) continue;
+      if (
+        rep.cuadra === candidato.cuadra &&
+        rep.categoria === candidato.categoria &&
+        rep.actor === candidato.actor &&
+        normalizarMinuto(rep.fecha_hora) === fechaCand &&
+        Number(rep.lat).toFixed(5) === latCand &&
+        Number(rep.lng).toFixed(5) === lngCand
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Lee los reportes guardados localmente en localStorage.
    * @returns {Array}
    */
@@ -897,6 +938,15 @@
           foto: ESTADO.fotoBase64Actual || ''
         };
 
+        if (esReporteDuplicado(nuevoReporte, ESTADO.reportesConsolidados)) {
+          mostrarMensaje(
+            'captura-estado',
+            'Ya existe un reporte idéntico con estos mismos datos y hora. Cambia algún campo (ubicación, cuadra, categoría, actor o fecha/hora) si es un incidente distinto.',
+            'warning'
+          );
+          return;
+        }
+
         nuevoReporte.criticidad = global.Criticidad.calcularCriticidad(
           nuevoReporte,
           ESTADO.vias,
@@ -1230,7 +1280,8 @@
     cambiarVista: cambiarVista,
     parsearFechaLocal: parsearFechaLocal,
     validarFechaIncidente: validarFechaIncidente,
-    generarIdLocal: generarIdLocal
+    generarIdLocal: generarIdLocal,
+    esReporteDuplicado: esReporteDuplicado
   };
 
   if (typeof module !== 'undefined' && module.exports) {
