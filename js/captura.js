@@ -564,6 +564,149 @@
     }
   }
 
+  // El editor trabaja sobre la vista previa; entrega el resultado mediante foto:pixelada.
+  function configurarEditorPixelado(preview, info) {
+    const verificacion = document.getElementById('foto-verificacion');
+    const editor = document.getElementById('editor-pixelado');
+    const canvas = document.getElementById('lienzo-pixelado');
+    if (!preview || !editor || !canvas || !verificacion) return;
+
+    const lista = document.getElementById('foto-pixelada-lista');
+    const aceptar = document.getElementById('btn-foto-anonimizada');
+    const abrir = document.getElementById('btn-abrir-pixelado');
+    const fino = document.getElementById('pincel-fino');
+    const grueso = document.getElementById('pincel-grueso');
+    const deshacer = document.getElementById('btn-deshacer-pixelado');
+    const aplicar = document.getElementById('btn-aplicar-pixelado');
+    const ctx = canvas.getContext('2d');
+    const bloque = 10;
+    const pintados = new Set();
+    const historial = [];
+    let mosaico, columnas, puntero, anterior, trazo;
+    let radio = 0;
+    let version = 0;
+
+    function elegirGrosor(amplio) {
+      radio = amplio ? 2 : 0;
+      fino.classList.toggle('active', !amplio);
+      grueso.classList.toggle('active', amplio);
+      fino.setAttribute('aria-pressed', String(!amplio));
+      grueso.setAttribute('aria-pressed', String(amplio));
+    }
+
+    function terminarTrazo() {
+      if (puntero == null) return;
+      if (trazo.length) historial.push(trazo);
+      const id = puntero;
+      puntero = null;
+      if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
+      deshacer.disabled = aplicar.disabled = !historial.length;
+    }
+
+    function reiniciar(hayFoto) {
+      version++;
+      terminarTrazo();
+      pintados.clear();
+      historial.length = 0;
+      mosaico = null;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      elegirGrosor(false);
+      abrir.disabled = false;
+      deshacer.disabled = aplicar.disabled = true;
+      editor.hidden = lista.hidden = true;
+      verificacion.hidden = !hayFoto;
+    }
+
+    aceptar.addEventListener('click', () => { verificacion.hidden = true; });
+    fino.addEventListener('click', () => elegirGrosor(false));
+    grueso.addEventListener('click', () => elegirGrosor(true));
+    abrir.addEventListener('click', async () => {
+      const vigente = version;
+      abrir.disabled = true;
+      try {
+        await preview.decode();
+        if (vigente !== version || verificacion.hidden) return;
+        canvas.width = preview.naturalWidth;
+        canvas.height = preview.naturalHeight;
+        ctx.drawImage(preview, 0, 0);
+
+        // Un píxel de la miniatura aporta el color de cada celda del mosaico.
+        mosaico = document.createElement('canvas');
+        columnas = mosaico.width = Math.ceil(canvas.width / bloque);
+        mosaico.height = Math.ceil(canvas.height / bloque);
+        mosaico.getContext('2d').drawImage(preview, 0, 0, columnas, mosaico.height);
+        ctx.imageSmoothingEnabled = false;
+        verificacion.hidden = true;
+        editor.hidden = false;
+        fino.focus();
+      } catch {
+        if (vigente === version && info) info.textContent = 'No se pudo abrir la foto para editarla.';
+      } finally {
+        if (vigente === version) abrir.disabled = false;
+      }
+    });
+
+    function pintar(x, y) {
+      const cx = Math.floor(x / bloque), cy = Math.floor(y / bloque);
+      for (let fila = Math.max(0, cy - radio); fila <= Math.min(mosaico.height - 1, cy + radio); fila++) {
+        for (let col = Math.max(0, cx - radio); col <= Math.min(columnas - 1, cx + radio); col++) {
+          const celda = fila * columnas + col;
+          if (pintados.has(celda)) continue;
+          ctx.drawImage(mosaico, col, fila, 1, 1, col * bloque, fila * bloque, bloque, bloque);
+          pintados.add(celda);
+          trazo.push(celda);
+        }
+      }
+    }
+
+    function dibujarHasta(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) * canvas.width / rect.width;
+      const y = (e.clientY - rect.top) * canvas.height / rect.height;
+      const desde = anterior || { x, y };
+      const dx = x - desde.x, dy = y - desde.y;
+      const pasos = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (bloque / 2)));
+      for (let i = 1; i <= pasos; i++) pintar(desde.x + dx * i / pasos, desde.y + dy * i / pasos);
+      anterior = { x, y };
+    }
+
+    canvas.addEventListener('pointerdown', e => {
+      if (puntero != null || e.button !== 0 || !mosaico) return;
+      puntero = e.pointerId;
+      anterior = null;
+      trazo = [];
+      canvas.setPointerCapture(puntero);
+      deshacer.disabled = aplicar.disabled = true;
+      dibujarHasta(e);
+    });
+    canvas.addEventListener('pointermove', e => { if (e.pointerId === puntero) dibujarHasta(e); });
+    canvas.addEventListener('pointerup', e => {
+      if (e.pointerId !== puntero) return;
+      dibujarHasta(e);
+      terminarTrazo();
+    });
+    for (const evento of ['pointercancel', 'lostpointercapture']) {
+      canvas.addEventListener(evento, e => { if (e.pointerId === puntero) terminarTrazo(); });
+    }
+    deshacer.addEventListener('click', () => {
+      for (const celda of historial.pop()) {
+        const x = (celda % columnas) * bloque, y = Math.floor(celda / columnas) * bloque;
+        ctx.drawImage(preview, x, y, bloque, bloque, x, y, bloque, bloque);
+        pintados.delete(celda);
+      }
+      deshacer.disabled = aplicar.disabled = !historial.length;
+    });
+    aplicar.addEventListener('click', () => {
+      const dataUrl = canvas.toDataURL('image/jpeg', CALIDAD_JPEG);
+      preview.src = dataUrl;
+      reiniciar(false);
+      lista.hidden = false;
+      if (info) info.textContent = 'Vista previa editada. El reporte aún usa la foto adjunta.';
+      preview.dispatchEvent(new CustomEvent('foto:pixelada', { bubbles: true, detail: { dataUrl } }));
+    });
+    return reiniciar;
+  }
+
   /**
    * Configura el formulario de Captura Rápida y la compresión de fotografía en canvas.
    */
@@ -580,6 +723,7 @@
     var btnConfirmarFoto = document.getElementById('confirmar-foto');
     var btnEnviar = document.getElementById('btn-enviar-reporte');
     var revisionFoto = 0;
+    const reiniciarEditor = configurarEditorPixelado(previewFoto, infoFoto);
 
     if (btnEnviar) btnEnviar.disabled = false;
 
@@ -618,6 +762,7 @@
         else previewFoto.removeAttribute('src');
         previewFoto.hidden = !dataUrl;
       }
+      if (reiniciarEditor) reiniciarEditor(Boolean(dataUrl));
       if (btnLimpiarFoto) btnLimpiarFoto.hidden = !dataUrl;
       if (confirmarQuitar) confirmarQuitar.hidden = true;
       if (inputFoto) inputFoto.value = '';

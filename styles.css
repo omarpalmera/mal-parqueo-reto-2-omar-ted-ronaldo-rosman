@@ -420,6 +420,74 @@ input[type='datetime-local'] {
 #foto-preview { width: 3rem; height: 3rem; object-fit: cover; margin-left: auto; border-radius: 6px; }
 .photo-step .helper-text { margin-top: 0.5rem; }
 #foto-info:empty { display: none; }
+
+.privacidad-panel {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--bg);
+}
+.privacidad-panel > p { margin: 0 0 0.75rem; font-size: 0.875rem; font-weight: 600; }
+.privacidad-acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.privacidad-acciones .btn { flex: 1 1 10rem; font-size: 0.875rem; }
+#btn-foto-anonimizada { color: var(--bajo); border-color: currentColor; }
+#btn-abrir-pixelado { color: var(--medio); background: var(--medio-bg); border-color: currentColor; }
+#lienzo-pixelado {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  background: hsl(208 24% 18%);
+  border-radius: 8px;
+  touch-action: none;
+  cursor: crosshair;
+}
+.pixelado-barra {
+  display: grid;
+  grid-template-columns: 2fr 1.25fr 1fr;
+  align-items: stretch;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem;
+  border-radius: 8px;
+  background: hsl(208 24% 18%);
+}
+.pixelado-grosores { display: grid; grid-template-columns: repeat(2, 1fr); }
+.pixelado-barra button {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.25rem;
+  min-height: 48px;
+  min-width: 44px;
+  padding: 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: white;
+  font: 600 0.75rem/1.2 system-ui, sans-serif;
+  cursor: pointer;
+}
+.pixelado-barra .icon, #foto-pixelada-lista .icon { width: 1rem; height: 1rem; }
+.pixelado-barra button:hover:enabled { border-color: currentColor; }
+.pixelado-barra button:focus-visible { outline: 2px solid white; outline-offset: -3px; }
+.pixelado-barra button.active { background: var(--surface); color: var(--primary-hover); }
+.pixelado-barra button.active:focus-visible { outline-color: var(--primary); }
+.pixelado-barra button:disabled { opacity: 0.55; cursor: default; }
+#btn-aplicar-pixelado { background: var(--bajo); }
+#foto-pixelada-lista:not([hidden]) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--bajo-bg);
+  color: var(--bajo);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
 #btn-quitar-foto, #confirmar-quitar { margin-top: 0.5rem; }
 #confirmar-quitar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .captura-form .btn[hidden], #confirmar-quitar[hidden] { display: none; }
@@ -860,6 +928,7 @@ summary { cursor: pointer; }
    Estilos de Impresión (@media print) - Resumen Operativo limpio (RF-05)
    ========================================================================== */
 @media print {
+  #foto-verificacion, #editor-pixelado, #foto-pixelada-lista { display: none !important; }
   @page { margin: 15mm; }
   body { color: black; background: white; font-size: 10pt; }
   .app-masthead, #vista-captura, .app-footer, .dashboard-heading,

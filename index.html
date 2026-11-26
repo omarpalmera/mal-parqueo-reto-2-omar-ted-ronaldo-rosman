@@ -120,6 +120,43 @@
               <img id="foto-preview" alt="Foto adjunta" hidden>
             </label>
           </div>
+          <div id="foto-verificacion" class="privacidad-panel" role="group" aria-labelledby="foto-pregunta" hidden>
+            <p id="foto-pregunta">¿La foto ya está anonimizada (sin placas ni rostros visibles)?</p>
+            <div class="privacidad-acciones">
+              <button type="button" id="btn-foto-anonimizada" class="btn btn-outline">Sí, está anonimizada</button>
+              <button type="button" id="btn-abrir-pixelado" class="btn" aria-controls="editor-pixelado">No, pixelar ahora</button>
+            </div>
+          </div>
+
+          <section id="editor-pixelado" class="privacidad-panel" aria-label="Editor de pixelado" hidden>
+            <p id="instruccion-pixelado">Desliza el dedo sobre placas o rostros para pixelarlos</p>
+            <canvas id="lienzo-pixelado" width="640" height="400" aria-label="Foto para pixelar" aria-describedby="instruccion-pixelado">Tu navegador necesita admitir lienzos para editar la foto.</canvas>
+            <div class="pixelado-barra" role="group" aria-label="Herramientas de pixelado">
+              <div class="pixelado-grosores" role="group" aria-label="Grosor del pincel pixelado">
+                <button type="button" id="pincel-fino" class="active" aria-pressed="true">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v16m6-16v16M4 9h16M4 15h16"/></svg>
+                  Fino
+                </button>
+                <button type="button" id="pincel-grueso" aria-pressed="false">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 4v16M4 12h16"/></svg>
+                  Grueso
+                </button>
+              </div>
+              <button type="button" id="btn-deshacer-pixelado" disabled>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4-5 5 5 5M5 9h9a6 6 0 0 1 0 12"/></svg>
+                Deshacer
+              </button>
+              <button type="button" id="btn-aplicar-pixelado">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 5 5L20 6"/></svg>
+                Listo
+              </button>
+            </div>
+          </section>
+
+          <span id="foto-pixelada-lista" role="status" hidden>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 5 5L20 6"/></svg>
+            Foto pixelada y lista
+          </span>
           <p id="foto-privacidad" class="helper-text">Oculta placas y rostros antes de adjuntar la foto.</p>
           <p id="foto-info" class="helper-text" role="status"></p>
           <button type="button" id="btn-quitar-foto" class="btn btn-small btn-outline" hidden>Quitar foto</button>
