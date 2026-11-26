@@ -109,6 +109,7 @@
     if (Array.isArray(viasData)) {
       for (var v = 0; v < viasData.length; v++) {
         var via = viasData[v];
+        if (!via) continue;
         mapaVias[via.id || via.codigo] = via;
       }
     }
@@ -116,6 +117,7 @@
     var agrupado = {};
     for (var i = 0; i < reportesFiltrados.length; i++) {
       var rep = reportesFiltrados[i];
+      if (!rep || !rep.cuadra) continue;
       var cuadraId = rep.cuadra;
       if (!agrupado[cuadraId]) {
         var infoVia = mapaVias[cuadraId] || {};
@@ -160,13 +162,13 @@
         }
       }
 
-      if (grupo.categorias[rep.categoria] !== undefined) {
+      if (Object.prototype.hasOwnProperty.call(grupo.categorias, rep.categoria)) {
         grupo.categorias[rep.categoria] += 1;
       } else if (rep.categoria) {
         grupo.categorias[rep.categoria] = 1;
       }
 
-      if (grupo.actores[rep.actor] !== undefined) {
+      if (Object.prototype.hasOwnProperty.call(grupo.actores, rep.actor)) {
         grupo.actores[rep.actor] += 1;
       } else if (rep.actor) {
         grupo.actores[rep.actor] = 1;
@@ -200,7 +202,7 @@
    */
   function resumirDistribucion(conteos, diccionarioEtiquetas) {
     var partes = [];
-    var claves = Object.keys(conteos);
+    var claves = Object.keys(conteos || {});
     for (var i = 0; i < claves.length; i++) {
       var k = claves[i];
       if (conteos[k] > 0) {
@@ -208,6 +210,67 @@
       }
     }
     return partes.join(' · ');
+  }
+
+  /**
+   * Construye una tarjeta Top 5 mediante DOM puro (respaldo si falta <template id="tarjeta-prioridad">).
+   * @param {Object} item
+   * @returns {HTMLElement}
+   */
+  function construirTarjetaFallback(item) {
+    var tarjeta = document.createElement('article');
+    tarjeta.className = 'top5-card rule-' + String(item.codigoRegla || 'r4').toLowerCase();
+
+    var header = document.createElement('div');
+    header.className = 'top5-header';
+
+    var rank = document.createElement('div');
+    rank.className = 'top5-rank';
+    rank.textContent = '#' + item.posicion;
+
+    var tituloWrap = document.createElement('div');
+    tituloWrap.className = 'top5-titulo';
+    var h4 = document.createElement('h4');
+    h4.textContent = item.nombre;
+    var meta = document.createElement('div');
+    meta.className = 'top5-meta';
+    meta.textContent =
+      item.sector + ' · Vía ' + item.tipo_via + ' · ' +
+      item.totalReportes + (item.totalReportes === 1 ? ' reporte' : ' reportes');
+    tituloWrap.append(h4, meta);
+
+    var score = document.createElement('div');
+    score.className = 'top5-score';
+    var scoreNum = document.createElement('span');
+    scoreNum.className = 'score-num';
+    scoreNum.textContent = String(item.puntajeTotal);
+    var scoreLbl = document.createElement('span');
+    scoreLbl.className = 'score-label';
+    scoreLbl.textContent = 'pts acum.';
+    score.append(scoreNum, scoreLbl);
+
+    header.append(rank, tituloWrap, score);
+
+    var metrics = document.createElement('div');
+    metrics.className = 'top5-metrics';
+    var pCats = document.createElement('p');
+    pCats.textContent = 'Categorías · ' + resumirDistribucion(item.categorias, ETIQUETAS_CATEGORIA_CORTA);
+    var pActs = document.createElement('p');
+    pActs.textContent = 'Actores · ' + resumirDistribucion(item.actores, ETIQUETAS_ACTOR_CORTA);
+    metrics.append(pCats, pActs);
+
+    var rec = document.createElement('div');
+    rec.className = 'top5-recomendacion rule-' + String(item.codigoRegla || 'r4').toLowerCase();
+    var pAcc = document.createElement('div');
+    pAcc.className = 'rec-accion';
+    pAcc.textContent = item.recomendacion;
+    var pReg = document.createElement('div');
+    pReg.className = 'rec-regla';
+    pReg.textContent = item.reglaAplicada;
+    rec.append(pAcc, pReg);
+
+    tarjeta.append(header, metrics, rec);
+    return tarjeta;
   }
 
   /**
@@ -228,7 +291,7 @@
     }
 
     contenedor.replaceChildren();
-    if (!top5 || !top5.length) {
+    if (!Array.isArray(top5) || !top5.length) {
       var vacio = document.createElement('p');
       vacio.className = 'empty-state';
       vacio.textContent = 'Ninguna cuadra coincide. Prueba otra combinación de filtros.';
@@ -237,20 +300,44 @@
       var lista = document.createElement('ol');
       lista.className = 'top5-lista';
       var plantilla = document.getElementById('tarjeta-prioridad');
+      var tienePlantilla = Boolean(plantilla && plantilla.content && plantilla.content.firstElementChild);
+
       top5.forEach(function (item) {
         var fila = document.createElement('li');
-        var tarjeta = plantilla.content.firstElementChild.cloneNode(true);
-        tarjeta.classList.add('rule-' + item.codigoRegla.toLowerCase());
-        tarjeta.querySelector('.top5-rank').textContent = '#' + item.posicion;
-        tarjeta.querySelector('h4').textContent = item.nombre;
-        tarjeta.querySelector('.score-num').textContent = item.puntajeTotal;
-        tarjeta.querySelector('.top5-meta').textContent = item.sector + ' · Vía ' + item.tipo_via + ' · ' +
-          item.totalReportes + (item.totalReportes === 1 ? ' reporte' : ' reportes');
-        tarjeta.querySelector('.rec-accion').textContent = item.recomendacion;
-        tarjeta.querySelector('.rec-regla').textContent = item.reglaAplicada;
-        var detalles = tarjeta.querySelectorAll('.top5-metrics p');
-        detalles[0].textContent = 'Categorías · ' + resumirDistribucion(item.categorias, ETIQUETAS_CATEGORIA_CORTA);
-        detalles[1].textContent = 'Actores · ' + resumirDistribucion(item.actores, ETIQUETAS_ACTOR_CORTA);
+        var tarjeta;
+
+        if (tienePlantilla) {
+          tarjeta = plantilla.content.firstElementChild.cloneNode(true);
+          tarjeta.classList.add('rule-' + String(item.codigoRegla || 'r4').toLowerCase());
+          var elRank = tarjeta.querySelector('.top5-rank');
+          var elTitulo = tarjeta.querySelector('h4');
+          var elScore = tarjeta.querySelector('.score-num');
+          var elMeta = tarjeta.querySelector('.top5-meta');
+          var elAccion = tarjeta.querySelector('.rec-accion');
+          var elRegla = tarjeta.querySelector('.rec-regla');
+
+          if (elRank) elRank.textContent = '#' + item.posicion;
+          if (elTitulo) elTitulo.textContent = item.nombre;
+          if (elScore) elScore.textContent = String(item.puntajeTotal);
+          if (elMeta) {
+            elMeta.textContent =
+              item.sector + ' · Vía ' + item.tipo_via + ' · ' +
+              item.totalReportes + (item.totalReportes === 1 ? ' reporte' : ' reportes');
+          }
+          if (elAccion) elAccion.textContent = item.recomendacion;
+          if (elRegla) elRegla.textContent = item.reglaAplicada;
+
+          var detalles = tarjeta.querySelectorAll('.top5-metrics p');
+          if (detalles[0]) {
+            detalles[0].textContent = 'Categorías · ' + resumirDistribucion(item.categorias, ETIQUETAS_CATEGORIA_CORTA);
+          }
+          if (detalles[1]) {
+            detalles[1].textContent = 'Actores · ' + resumirDistribucion(item.actores, ETIQUETAS_ACTOR_CORTA);
+          }
+        } else {
+          tarjeta = construirTarjetaFallback(item);
+        }
+
         fila.appendChild(tarjeta);
         lista.appendChild(fila);
       });
@@ -271,15 +358,29 @@
     var casoA = null;
     var casoB = null;
     for (var i = 0; i < reportesActuales.length; i++) {
-      if (reportesActuales[i].id === 'MP-014') casoA = reportesActuales[i];
-      if (reportesActuales[i].id === 'MP-026') casoB = reportesActuales[i];
+      if (reportesActuales[i] && reportesActuales[i].id === 'MP-014') casoA = reportesActuales[i];
+      if (reportesActuales[i] && reportesActuales[i].id === 'MP-026') casoB = reportesActuales[i];
     }
-    if (!casoA && reportesActuales.length > 0) casoA = reportesActuales[0];
-    if (!casoB && reportesActuales.length > 1) casoB = reportesActuales[reportesActuales.length - 1];
+    if (!casoA) {
+      for (var a = 0; a < reportesActuales.length; a++) {
+        if (reportesActuales[a] && reportesActuales[a] !== casoB) {
+          casoA = reportesActuales[a];
+          break;
+        }
+      }
+    }
+    if (!casoB) {
+      for (var b = reportesActuales.length - 1; b >= 0; b--) {
+        if (reportesActuales[b] && reportesActuales[b] !== casoA) {
+          casoB = reportesActuales[b];
+          break;
+        }
+      }
+    }
 
     var casos = [casoA, casoB].filter(Boolean);
     if (casos.length === 0) {
-      contenedor.innerHTML = '';
+      contenedor.replaceChildren();
       return;
     }
 
@@ -288,23 +389,30 @@
     casos.forEach(function (rep) {
       var caso = document.createElement('article');
       caso.className = 'caso-card';
+
+      var nivelTexto = rep.criticidad && rep.criticidad.nivel ? String(rep.criticidad.nivel).toLowerCase() : 'sin clasificar';
+      var puntaje = rep.criticidad && typeof rep.criticidad.puntaje === 'number' ? rep.criticidad.puntaje : 0;
+      var fechaTexto = typeof rep.fecha_hora === 'string' ? rep.fecha_hora.replace('T', ' ') : '-';
+      var d = rep.criticidad && rep.criticidad.desglose ? rep.criticidad.desglose : {};
+
       var titulo = document.createElement('strong');
-      titulo.textContent = rep.id + ' · Nivel ' + rep.criticidad.nivel.toLowerCase() +
-        ' · ' + rep.criticidad.puntaje + ' puntos';
+      titulo.textContent = rep.id + ' · Nivel ' + nivelTexto + ' · ' + puntaje + ' puntos';
+
       var fecha = document.createElement('p');
-      fecha.textContent = rep.fecha_hora.replace('T', ' ');
-      var d = rep.criticidad.desglose;
+      fecha.textContent = fechaTexto;
+
       var factores = document.createElement('ul');
       factores.className = 'score-pills';
       [
-        [ETIQUETAS_CATEGORIA_CORTA[rep.categoria] || 'Categoría', d.ptsCategoria],
-        ['Vía ' + d.tipoVia, d.ptsVia],
-        ['Hora ' + d.franja, d.ptsFranja]
+        [ETIQUETAS_CATEGORIA_CORTA[rep.categoria] || 'Categoría', d.ptsCategoria != null ? d.ptsCategoria : 0],
+        ['Vía ' + (d.tipoVia || '-'), d.ptsVia != null ? d.ptsVia : 0],
+        ['Hora ' + (d.franja || '-'), d.ptsFranja != null ? d.ptsFranja : 0]
       ].forEach(function (factor) {
         var chip = document.createElement('li');
         chip.textContent = factor[0] + ' · ' + factor[1];
         factores.appendChild(chip);
       });
+
       caso.append(titulo, fecha, factores);
       grid.appendChild(caso);
     });

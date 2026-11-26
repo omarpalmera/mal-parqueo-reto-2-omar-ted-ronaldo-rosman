@@ -23,6 +23,8 @@
     var horas = parseInt(partes[0], 10);
     var minutos = parseInt(partes[1], 10);
     if (isNaN(horas) || isNaN(minutos)) return NaN;
+    if (horas === 24 && minutos === 0) return 1440;
+    if (horas < 0 || horas > 23 || minutos < 0 || minutos > 59) return NaN;
     return horas * 60 + minutos;
   }
 
@@ -63,8 +65,17 @@
       var extremos = rango.split('-');
       var inicio = horaAMinutos(extremos[0]);
       var fin = horaAMinutos(extremos[1]);
-      if (!isNaN(inicio) && !isNaN(fin) && minutosReporte >= inicio && minutosReporte <= fin) {
-        return 'pico';
+      if (!isNaN(inicio) && !isNaN(fin)) {
+        if (inicio <= fin) {
+          if (minutosReporte >= inicio && minutosReporte <= fin) {
+            return 'pico';
+          }
+        } else {
+          // Soporte para rangos nocturnos que cruzan la medianoche (ej. 22:00-02:00)
+          if (minutosReporte >= inicio || minutosReporte <= fin) {
+            return 'pico';
+          }
+        }
       }
     }
     return 'valle';
@@ -107,6 +118,8 @@
     var limiteMinimo = Infinity;
     var nivelMaximo = null;
     var limiteMaximo = -Infinity;
+    var nivelCercano = null;
+    var menorDistancia = Infinity;
 
     for (var i = 0; i < entradas.length; i++) {
       var nombreNivel = entradas[i][0];
@@ -115,6 +128,7 @@
 
       var min = Number(rango[0]);
       var max = Number(rango[1]);
+      if (isNaN(min) || isNaN(max)) continue;
 
       if (puntaje >= min && puntaje <= max) {
         return nombreNivel;
@@ -128,6 +142,12 @@
         limiteMaximo = max;
         nivelMaximo = nombreNivel;
       }
+
+      var distancia = puntaje < min ? min - puntaje : puntaje - max;
+      if (distancia < menorDistancia) {
+        menorDistancia = distancia;
+        nivelCercano = nombreNivel;
+      }
     }
 
     if (puntaje > limiteMaximo && nivelMaximo !== null) {
@@ -136,7 +156,7 @@
     if (puntaje < limiteMinimo && nivelMinimo !== null) {
       return nivelMinimo;
     }
-    return nivelMinimo || 'Sin clasificar';
+    return nivelCercano || nivelMinimo || 'Sin clasificar';
   }
 
   /**

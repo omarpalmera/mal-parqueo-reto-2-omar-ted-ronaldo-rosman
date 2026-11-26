@@ -4,6 +4,7 @@
  * - Carga de datos JSON por rutas relativas (compatibles con GitHub Pages).
  * - Recálculo dinámico de criticidad al iniciar (si cambia criterios.json, todo se actualiza).
  * - Captura rápida en < 30 segundos con compresión de foto en <canvas> a maxWidth = 800 px.
+ * - Validación de fechas (bloquea fechas futuras y permite libremente fechas previas).
  * - Persistencia en localStorage ('reto2_reportes_local') y fusión sin duplicados.
  * - Exportar e Importar JSON (RF-06 / CU-04) deduplicando estrictamente por reporte.id.
  */
@@ -45,6 +46,87 @@
     var hh = String(d.getHours()).padStart(2, '0');
     var min = String(d.getMinutes()).padStart(2, '0');
     return yyyy + '-' + mm + '-' + dd + 'T' + hh + ':' + min;
+  }
+
+  /**
+   * Parsea una fecha/hora local en formato YYYY-MM-DDTHH:MM (o YYYY-MM-DD HH:MM[:SS])
+   * verificando que no exista desbordamiento de calendario (ej. 31 de febrero).
+   * @param {string} fechaHoraStr
+   * @returns {Date|null}
+   */
+  function parsearFechaLocal(fechaHoraStr) {
+    if (typeof fechaHoraStr !== 'string') return null;
+    var match = fechaHoraStr
+      .trim()
+      .match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?$/);
+    if (!match) return null;
+
+    var anio = parseInt(match[1], 10);
+    var mes = parseInt(match[2], 10);
+    var dia = parseInt(match[3], 10);
+    var hora = parseInt(match[4], 10);
+    var minuto = parseInt(match[5], 10);
+    var segundo = match[6] ? parseInt(match[6], 10) : 0;
+
+    if (mes < 1 || mes > 12 || dia < 1 || dia > 31 || hora > 23 || minuto > 59 || segundo > 59) {
+      return null;
+    }
+
+    var fecha = new Date(anio, mes - 1, dia, hora, minuto, segundo, 0);
+    if (
+      fecha.getFullYear() !== anio ||
+      fecha.getMonth() !== mes - 1 ||
+      fecha.getDate() !== dia ||
+      fecha.getHours() !== hora ||
+      fecha.getMinutes() !== minuto
+    ) {
+      return null;
+    }
+    return fecha;
+  }
+
+  /**
+   * Valida que la fecha del incidente sea válida y no sea futura.
+   * Permite libremente fechas previas y la fecha/hora actual.
+   * @param {string} fechaHoraStr
+   * @param {Date} [ahora]
+   * @returns {{ valida: boolean, motivo: string }}
+   */
+  function validarFechaIncidente(fechaHoraStr, ahora) {
+    var fecha = parsearFechaLocal(fechaHoraStr);
+    if (!fecha) {
+      return {
+        valida: false,
+        motivo: 'La fecha y hora del incidente no tiene un formato válido.'
+      };
+    }
+    var referencia = ahora instanceof Date ? ahora : new Date();
+    if (fecha.getTime() > referencia.getTime()) {
+      return {
+        valida: false,
+        motivo: 'No se pueden registrar incidentes en fechas u horas futuras. Selecciona la hora actual o una fecha anterior.'
+      };
+    }
+    return { valida: true, motivo: '' };
+  }
+
+  /**
+   * Genera un identificador único para reportes locales evitando colisiones al importar.
+   * @returns {string}
+   */
+  function generarIdLocal() {
+    var existentes = new Set();
+    for (var i = 0; i < ESTADO.reportesConsolidados.length; i++) {
+      if (ESTADO.reportesConsolidados[i] && ESTADO.reportesConsolidados[i].id) {
+        existentes.add(ESTADO.reportesConsolidados[i].id);
+      }
+    }
+    var candidato = '';
+    do {
+      var aleatorio = Math.random().toString(36).slice(2, 6).toUpperCase();
+      candidato = 'MP-LOCAL-' + Date.now() + '-' + aleatorio;
+    } while (existentes.has(candidato));
+    return candidato;
   }
 
   /**
@@ -178,11 +260,42 @@
   }
 
   /**
+   * Actualiza las opciones del selector de cuadra del tablero según el sector elegido.
+   * @param {string} sectorSeleccionado
+   */
+  function actualizarOpcionesCuadraFiltro(sectorSeleccionado) {
+    var selectCuadraFiltro = document.getElementById('filtro-cuadra');
+    if (!selectCuadraFiltro) return;
+
+    var valorPrevio = ESTADO.filtros.cuadra;
+    var cuadraSigueValida = valorPrevio === 'todas';
+
+    selectCuadraFiltro.innerHTML = '<option value="todas">Todas las cuadras</option>';
+    for (var j = 0; j < ESTADO.vias.length; j++) {
+      var vf = ESTADO.vias[j];
+      if (sectorSeleccionado && sectorSeleccionado !== 'todos' && vf.sector !== sectorSeleccionado) {
+        continue;
+      }
+      var optF = document.createElement('option');
+      optF.value = vf.id;
+      optF.textContent = vf.nombre;
+      selectCuadraFiltro.appendChild(optF);
+      if (vf.id === valorPrevio) {
+        cuadraSigueValida = true;
+      }
+    }
+
+    if (!cuadraSigueValida) {
+      ESTADO.filtros.cuadra = 'todas';
+    }
+    selectCuadraFiltro.value = ESTADO.filtros.cuadra;
+  }
+
+  /**
    * Pobla dinámicamente los selectores de cuadra y sector desde datos/vias.json.
    */
   function poblarSelectoresVias() {
     var selectCuadraCaptura = document.getElementById('cuadra');
-    var selectCuadraFiltro = document.getElementById('filtro-cuadra');
     var selectSectorFiltro = document.getElementById('filtro-sector');
 
     if (selectCuadraCaptura) {
@@ -196,16 +309,7 @@
       }
     }
 
-    if (selectCuadraFiltro) {
-      selectCuadraFiltro.innerHTML = '<option value="todas">Todas las cuadras</option>';
-      for (var j = 0; j < ESTADO.vias.length; j++) {
-        var vf = ESTADO.vias[j];
-        var optF = document.createElement('option');
-        optF.value = vf.id;
-        optF.textContent = vf.nombre;
-        selectCuadraFiltro.appendChild(optF);
-      }
-    }
+    actualizarOpcionesCuadraFiltro(ESTADO.filtros.sector);
 
     if (selectSectorFiltro) {
       var sectores = [];
@@ -271,22 +375,29 @@
       ESTADO.criterios
     );
 
-    var nivel = elPreview.querySelector('#nivel-estimado');
-    nivel.className = 'pill-nivel pill-' + res.nivel.toLowerCase();
-    nivel.textContent = 'Nivel ' + res.nivel.toLowerCase() + ' · ' + puntos(res.puntaje);
-
     var desglose = res.desglose;
+    var nivel = elPreview.querySelector('#nivel-estimado');
     var lista = elPreview.querySelector('.score-pills');
-    lista.replaceChildren();
-    [
-      ['Categoría', desglose.ptsCategoria],
-      ['Vía ' + desglose.tipoVia, desglose.ptsVia],
-      ['Hora ' + desglose.franja, desglose.ptsFranja]
-    ].forEach(function (factor) {
-      var item = document.createElement('li');
-      item.textContent = factor[0] + ' · ' + puntos(factor[1]);
-      lista.appendChild(item);
-    });
+
+    if (nivel && lista) {
+      nivel.className = 'pill-nivel pill-' + res.nivel.toLowerCase();
+      nivel.textContent = 'Nivel ' + res.nivel.toLowerCase() + ' · ' + puntos(res.puntaje);
+
+      lista.replaceChildren();
+      [
+        ['Categoría', desglose.ptsCategoria],
+        ['Vía ' + desglose.tipoVia, desglose.ptsVia],
+        ['Hora ' + desglose.franja, desglose.ptsFranja]
+      ].forEach(function (factor) {
+        var item = document.createElement('li');
+        item.textContent = factor[0] + ' · ' + puntos(factor[1]);
+        lista.appendChild(item);
+      });
+    } else {
+      elPreview.textContent =
+        'Criticidad estimada: ' + res.nivel + ' (' + puntos(res.puntaje) + ') ' +
+        '[Cat ' + desglose.ptsCategoria + ' + Vía ' + desglose.ptsVia + ' + Franja ' + desglose.ptsFranja + ' (' + desglose.franja + ')]';
+    }
   }
 
   /**
@@ -301,7 +412,8 @@
     var filtrados = global.Filtros.filtrarReportes(
       ESTADO.reportesConsolidados,
       ESTADO.filtros,
-      ESTADO.vias
+      ESTADO.vias,
+      ESTADO.criterios
     );
 
     var contadores = global.Filtros.calcularContadores(filtrados);
@@ -315,12 +427,14 @@
       ESTADO.reportesConsolidados
     );
 
-    global.MapaMovilidad.actualizarCapasMapa(
-      filtrados,
-      ESTADO.vias,
-      ESTADO.criterios,
-      ESTADO.modoCapa
-    );
+    if (global.MapaMovilidad && typeof global.MapaMovilidad.actualizarCapasMapa === 'function') {
+      global.MapaMovilidad.actualizarCapasMapa(
+        filtrados,
+        ESTADO.vias,
+        ESTADO.criterios,
+        ESTADO.modoCapa
+      );
+    }
   }
 
   /**
@@ -347,7 +461,9 @@
       tabTablero.setAttribute('aria-selected', String(esTablero));
     }
 
-    global.MapaMovilidad.refrescarTamanoMapa(vista);
+    if (global.MapaMovilidad && typeof global.MapaMovilidad.refrescarTamanoMapa === 'function') {
+      global.MapaMovilidad.refrescarTamanoMapa(vista);
+    }
   }
 
   /**
@@ -359,14 +475,14 @@
     var selectCuadra = document.getElementById('cuadra');
     var btnGps = document.getElementById('btn-gps');
     var gpsTexto = document.getElementById('gps-coordenadas-texto');
-
-    var gpsEtiqueta = btnGps.querySelector('span');
+    var gpsEtiqueta = btnGps ? (btnGps.querySelector('span') || btnGps) : null;
+    var bannerGpsId = document.getElementById('gps-estado') ? 'gps-estado' : 'captura-estado';
 
     function aplicarCoordenadas(lat, lng, origenTexto, viaSugerida) {
       if (inputLat) inputLat.value = lat.toFixed(6);
       if (inputLng) inputLng.value = lng.toFixed(6);
       if (gpsTexto) {
-        mostrarMensaje('gps-estado', '', '');
+        mostrarMensaje(bannerGpsId, '', '');
         gpsTexto.textContent = origenTexto;
         gpsTexto.title = lat.toFixed(5) + ', ' + lng.toFixed(5);
       }
@@ -380,14 +496,16 @@
     var lngDefault = ESTADO.vias[0] ? ESTADO.vias[0].lng : -74.2105;
     aplicarCoordenadas(latDefault, lngDefault, 'Punto inicial', ESTADO.vias[0]);
 
-    global.MapaMovilidad.inicializarMiniMapa(
-      latDefault,
-      lngDefault,
-      ESTADO.vias,
-      function (nuevaLat, nuevaLng, viaCercana) {
-        aplicarCoordenadas(nuevaLat, nuevaLng, 'Pin ajustado en mapa', viaCercana);
-      }
-    );
+    if (global.MapaMovilidad && typeof global.MapaMovilidad.inicializarMiniMapa === 'function') {
+      global.MapaMovilidad.inicializarMiniMapa(
+        latDefault,
+        lngDefault,
+        ESTADO.vias,
+        function (nuevaLat, nuevaLng, viaCercana) {
+          aplicarCoordenadas(nuevaLat, nuevaLng, 'Pin ajustado en mapa', viaCercana);
+        }
+      );
+    }
 
     if (selectCuadra) {
       selectCuadra.addEventListener('change', function () {
@@ -396,7 +514,9 @@
           if (ESTADO.vias[i].id === selectCuadra.value) {
             var v = ESTADO.vias[i];
             aplicarCoordenadas(v.lat, v.lng, 'Cuadra seleccionada', null);
-            global.MapaMovilidad.actualizarPinMiniMapa(v.lat, v.lng);
+            if (global.MapaMovilidad && typeof global.MapaMovilidad.actualizarPinMiniMapa === 'function') {
+              global.MapaMovilidad.actualizarPinMiniMapa(v.lat, v.lng);
+            }
             break;
           }
         }
@@ -406,16 +526,16 @@
     if (btnGps) {
       btnGps.addEventListener('click', function () {
         if (!navigator.geolocation) {
-          mostrarMensaje('gps-estado', 'Tu navegador no soporta geolocalización GPS. Toca el mini-mapa.', 'warning');
+          mostrarMensaje(bannerGpsId, 'Tu navegador no soporta geolocalización GPS. Toca el mini-mapa.', 'warning');
           return;
         }
         btnGps.disabled = true;
-        gpsEtiqueta.textContent = 'Buscando ubicación…';
+        if (gpsEtiqueta) gpsEtiqueta.textContent = 'Buscando ubicación…';
 
         navigator.geolocation.getCurrentPosition(
           function (pos) {
             btnGps.disabled = false;
-            gpsEtiqueta.textContent = 'Usar mi ubicación';
+            if (gpsEtiqueta) gpsEtiqueta.textContent = 'Usar mi ubicación';
             var lat = pos.coords.latitude;
             var lng = pos.coords.longitude;
             var viaCercana = global.MapaMovilidad.encontrarCuadraMasCercana(lat, lng, ESTADO.vias);
@@ -425,18 +545,18 @@
             var fueraZona = lat < 11.2390 || lat > 11.2460 || lng < -74.2150 || lng > -74.2070;
             if (fueraZona) {
               mostrarMensaje(
-                'gps-estado',
+                bannerGpsId,
                 'Tu ubicación está fuera de la zona de estudio. Toca el mapa para ajustar el punto.',
                 'warning'
               );
             } else {
-              mostrarMensaje('gps-estado', 'Ubicación GPS fijada dentro de la zona de estudio.', 'ok');
+              mostrarMensaje(bannerGpsId, 'Ubicación GPS fijada dentro de la zona de estudio.', 'ok');
             }
           },
           function () {
             btnGps.disabled = false;
-            gpsEtiqueta.textContent = 'Usar mi ubicación';
-            mostrarMensaje('gps-estado', 'No se pudo obtener permiso GPS. Toca directamente el mini-mapa para ubicar el pin.', 'warning');
+            if (gpsEtiqueta) gpsEtiqueta.textContent = 'Usar mi ubicación';
+            mostrarMensaje(bannerGpsId, 'No se pudo obtener permiso GPS. Toca directamente el mini-mapa para ubicar el pin.', 'warning');
           },
           { enableHighAccuracy: true, timeout: 7000 }
         );
@@ -454,16 +574,36 @@
     var previewFoto = document.getElementById('foto-preview');
     var infoFoto = document.getElementById('foto-info');
     var btnLimpiarFoto = document.getElementById('btn-quitar-foto');
-    var zonaFoto = form.querySelector('.foto-dropzone');
+    var zonaFoto = form ? form.querySelector('.foto-dropzone') : null;
     var confirmarQuitar = document.getElementById('confirmar-quitar');
     var cancelarQuitar = document.getElementById('cancelar-quitar');
+    var btnConfirmarFoto = document.getElementById('confirmar-foto');
     var btnEnviar = document.getElementById('btn-enviar-reporte');
     var revisionFoto = 0;
-    btnEnviar.disabled = false;
+
+    if (btnEnviar) btnEnviar.disabled = false;
+
+    function sincronizarLimiteFechaActual() {
+      if (!inputFecha) return;
+      inputFecha.max = formatearFechaHoraLocal(new Date());
+      inputFecha.removeAttribute('min');
+    }
 
     if (inputFecha) {
       inputFecha.value = formatearFechaHoraLocal(new Date());
-      inputFecha.addEventListener('change', actualizarVistaPreviaCriticidad);
+      sincronizarLimiteFechaActual();
+
+      inputFecha.addEventListener('focus', sincronizarLimiteFechaActual);
+      inputFecha.addEventListener('change', function () {
+        sincronizarLimiteFechaActual();
+        var check = validarFechaIncidente(inputFecha.value);
+        if (!check.valida) {
+          mostrarMensaje('captura-estado', check.motivo, 'warning');
+        } else {
+          mostrarMensaje('captura-estado', '', '');
+        }
+        actualizarVistaPreviaCriticidad();
+      });
     }
 
     var radios = document.querySelectorAll('input[name="categoria"]');
@@ -473,79 +613,112 @@
 
     function mostrarFoto(dataUrl) {
       ESTADO.fotoBase64Actual = dataUrl;
-      if (dataUrl) previewFoto.src = dataUrl;
-      else previewFoto.removeAttribute('src');
-      previewFoto.hidden = !dataUrl;
-      btnLimpiarFoto.hidden = !dataUrl;
-      confirmarQuitar.hidden = true;
-      inputFoto.value = '';
+      if (previewFoto) {
+        if (dataUrl) previewFoto.src = dataUrl;
+        else previewFoto.removeAttribute('src');
+        previewFoto.hidden = !dataUrl;
+      }
+      if (btnLimpiarFoto) btnLimpiarFoto.hidden = !dataUrl;
+      if (confirmarQuitar) confirmarQuitar.hidden = true;
+      if (inputFoto) inputFoto.value = '';
     }
 
     async function cargarFoto(archivo) {
       if (!archivo) return;
       var revision = ++revisionFoto;
-      btnEnviar.disabled = true;
-      confirmarQuitar.hidden = true;
-      btnLimpiarFoto.hidden = !ESTADO.fotoBase64Actual;
-      infoFoto.textContent = 'Preparando la foto…';
+      if (btnEnviar) btnEnviar.disabled = true;
+      if (confirmarQuitar) confirmarQuitar.hidden = true;
+      if (btnLimpiarFoto) btnLimpiarFoto.hidden = !ESTADO.fotoBase64Actual;
+      if (infoFoto) infoFoto.textContent = 'Preparando la foto…';
       try {
         var foto = await comprimirImagenCanvas(archivo);
         if (revision !== revisionFoto) return;
         mostrarFoto(foto.dataUrl);
-        infoFoto.textContent = 'Foto lista para registrar.';
+        if (infoFoto) {
+          infoFoto.textContent =
+            'Foto lista (' + foto.ancho + 'x' + foto.alto + ' px, ~' + foto.kb + ' KB). Recuerda evitar o difuminar placas y rostros.';
+        }
       } catch (err) {
         if (revision !== revisionFoto) return;
-        inputFoto.value = '';
-        infoFoto.textContent = ESTADO.fotoBase64Actual
-          ? 'No se pudo abrir esa imagen. Se conserva la foto anterior.'
-          : 'No se pudo abrir esa imagen. Prueba con otra foto.';
+        if (inputFoto) inputFoto.value = '';
+        if (infoFoto) {
+          infoFoto.textContent = ESTADO.fotoBase64Actual
+            ? 'No se pudo abrir esa imagen. Se conserva la foto anterior.'
+            : 'No se pudo abrir esa imagen. Prueba con otra foto.';
+        }
       } finally {
-        if (revision === revisionFoto) btnEnviar.disabled = false;
+        if (revision === revisionFoto && btnEnviar) btnEnviar.disabled = false;
       }
     }
 
-    inputFoto.addEventListener('change', function () {
-      cargarFoto(inputFoto.files[0]);
-    });
-    zonaFoto.addEventListener('dragover', function (e) {
-      e.preventDefault();
-      zonaFoto.classList.add('dragging');
-    });
-    zonaFoto.addEventListener('dragleave', function (e) {
-      if (!zonaFoto.contains(e.relatedTarget)) zonaFoto.classList.remove('dragging');
-    });
-    zonaFoto.addEventListener('drop', function (e) {
-      e.preventDefault();
-      zonaFoto.classList.remove('dragging');
-      cargarFoto(e.dataTransfer.files[0]);
-    });
+    if (inputFoto) {
+      inputFoto.addEventListener('change', function () {
+        if (inputFoto.files && inputFoto.files[0]) {
+          cargarFoto(inputFoto.files[0]);
+        }
+      });
+    }
 
-    btnLimpiarFoto.addEventListener('click', function () {
-      btnLimpiarFoto.hidden = true;
-      confirmarQuitar.hidden = false;
-      cancelarQuitar.focus();
-    });
-    cancelarQuitar.addEventListener('click', function () {
-      confirmarQuitar.hidden = true;
-      btnLimpiarFoto.hidden = false;
-      btnLimpiarFoto.focus();
-    });
-    document.getElementById('confirmar-foto').addEventListener('click', function () {
-      ++revisionFoto;
-      mostrarFoto('');
-      infoFoto.textContent = 'Foto retirada.';
-      var revisionRetirada = revisionFoto;
-      setTimeout(function () {
-        if (revisionFoto === revisionRetirada) infoFoto.textContent = '';
-      }, 3000);
-      btnEnviar.disabled = false;
-      inputFoto.focus();
-    });
+    if (zonaFoto) {
+      zonaFoto.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        zonaFoto.classList.add('dragging');
+      });
+      zonaFoto.addEventListener('dragleave', function (e) {
+        if (!zonaFoto.contains(e.relatedTarget)) zonaFoto.classList.remove('dragging');
+      });
+      zonaFoto.addEventListener('drop', function (e) {
+        e.preventDefault();
+        zonaFoto.classList.remove('dragging');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          cargarFoto(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    if (btnLimpiarFoto) {
+      btnLimpiarFoto.addEventListener('click', function () {
+        if (confirmarQuitar && cancelarQuitar && btnConfirmarFoto) {
+          btnLimpiarFoto.hidden = true;
+          confirmarQuitar.hidden = false;
+          cancelarQuitar.focus();
+        } else {
+          ++revisionFoto;
+          mostrarFoto('');
+          if (infoFoto) infoFoto.textContent = 'Foto retirada.';
+          if (btnEnviar) btnEnviar.disabled = false;
+        }
+      });
+    }
+
+    if (cancelarQuitar) {
+      cancelarQuitar.addEventListener('click', function () {
+        if (confirmarQuitar) confirmarQuitar.hidden = true;
+        if (btnLimpiarFoto) {
+          btnLimpiarFoto.hidden = false;
+          btnLimpiarFoto.focus();
+        }
+      });
+    }
+
+    if (btnConfirmarFoto) {
+      btnConfirmarFoto.addEventListener('click', function () {
+        ++revisionFoto;
+        mostrarFoto('');
+        if (infoFoto) infoFoto.textContent = 'Foto retirada.';
+        var revisionRetirada = revisionFoto;
+        setTimeout(function () {
+          if (revisionFoto === revisionRetirada && infoFoto) infoFoto.textContent = '';
+        }, 3000);
+        if (btnEnviar) btnEnviar.disabled = false;
+        if (inputFoto) inputFoto.focus();
+      });
+    }
 
     if (form) {
       form.addEventListener('submit', function (e) {
         e.preventDefault();
-        if (btnEnviar.disabled) return;
+        if (btnEnviar && btnEnviar.disabled) return;
 
         var lat = parseFloat((document.getElementById('lat') || {}).value);
         var lng = parseFloat((document.getElementById('lng') || {}).value);
@@ -559,8 +732,16 @@
           return;
         }
 
+        sincronizarLimiteFechaActual();
+        var validacionFecha = validarFechaIncidente(fechaHora);
+        if (!validacionFecha.valida) {
+          mostrarMensaje('captura-estado', validacionFecha.motivo, 'error');
+          if (inputFecha) inputFecha.focus();
+          return;
+        }
+
         var nuevoReporte = {
-          id: 'MP-LOCAL-' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 10),
+          id: generarIdLocal(),
           origen: 'ciudadano',
           fecha_hora: fechaHora,
           lat: Number(lat.toFixed(6)),
@@ -587,13 +768,16 @@
         refrescarTableroCompleto();
 
         mostrarFoto('');
-        infoFoto.textContent = '';
-        if (inputFecha) inputFecha.value = formatearFechaHoraLocal(new Date());
+        if (infoFoto) infoFoto.textContent = '';
+        if (inputFecha) {
+          inputFecha.value = formatearFechaHoraLocal(new Date());
+          sincronizarLimiteFechaActual();
+        }
         actualizarVistaPreviaCriticidad();
 
         mostrarMensaje(
           'captura-estado',
-          'Reporte guardado. Nivel ' + nuevoReporte.criticidad.nivel.toLowerCase() + ' · ' + puntos(nuevoReporte.criticidad.puntaje) + '.',
+          'Reporte ' + nuevoReporte.id + ' guardado. Nivel ' + nuevoReporte.criticidad.nivel.toLowerCase() + ' · ' + puntos(nuevoReporte.criticidad.puntaje) + '.',
           'ok'
         );
       });
@@ -616,7 +800,11 @@
       var el = document.getElementById(idDom);
       if (!el) return;
       el.addEventListener('change', function () {
-        ESTADO.filtros[mapaIds[idDom]] = el.value;
+        var claveFiltro = mapaIds[idDom];
+        ESTADO.filtros[claveFiltro] = el.value;
+        if (claveFiltro === 'sector') {
+          actualizarOpcionesCuadraFiltro(el.value);
+        }
         refrescarTableroCompleto();
       });
     });
@@ -631,11 +819,17 @@
           categoria: 'todas',
           actor: 'todos'
         };
-        document.getElementById('filtro-sector').value = 'todos';
-        document.getElementById('filtro-cuadra').value = 'todas';
-        document.getElementById('filtro-franja').value = 'todas';
-        document.getElementById('filtro-categoria').value = 'todas';
-        document.getElementById('filtro-actor').value = 'todos';
+        var elSector = document.getElementById('filtro-sector');
+        var elCuadra = document.getElementById('filtro-cuadra');
+        var elFranja = document.getElementById('filtro-franja');
+        var elCategoria = document.getElementById('filtro-categoria');
+        var elActor = document.getElementById('filtro-actor');
+        if (elSector) elSector.value = 'todos';
+        actualizarOpcionesCuadraFiltro('todos');
+        if (elCuadra) elCuadra.value = 'todas';
+        if (elFranja) elFranja.value = 'todas';
+        if (elCategoria) elCategoria.value = 'todas';
+        if (elActor) elActor.value = 'todos';
         refrescarTableroCompleto();
       });
     }
@@ -650,20 +844,34 @@
           botonesCapa[j].classList.toggle('active', activo);
           botonesCapa[j].setAttribute('aria-pressed', String(activo));
         }
-        var filtrados = global.Filtros.filtrarReportes(ESTADO.reportesConsolidados, ESTADO.filtros, ESTADO.vias);
-        global.MapaMovilidad.actualizarCapasMapa(filtrados, ESTADO.vias, ESTADO.criterios, modo);
+        var filtrados = global.Filtros.filtrarReportes(
+          ESTADO.reportesConsolidados,
+          ESTADO.filtros,
+          ESTADO.vias,
+          ESTADO.criterios
+        );
+        if (global.MapaMovilidad && typeof global.MapaMovilidad.actualizarCapasMapa === 'function') {
+          global.MapaMovilidad.actualizarCapasMapa(filtrados, ESTADO.vias, ESTADO.criterios, modo);
+        }
       });
     }
 
-    global.addEventListener('beforeprint', function () {
-      var seleccion = Object.keys(mapaIds).map(function (id) {
-        var campo = document.getElementById(id);
-        return campo.selectedIndex > 0 ? campo.selectedOptions[0].textContent : '';
-      }).filter(Boolean);
-      document.getElementById('print-filtros').textContent = seleccion.length
-        ? 'Filtros aplicados · ' + seleccion.join(' · ')
-        : 'Todos los reportes';
-    });
+    if (typeof global.addEventListener === 'function') {
+      global.addEventListener('beforeprint', function () {
+        var printFiltros = document.getElementById('print-filtros');
+        if (!printFiltros) return;
+        var seleccion = Object.keys(mapaIds).map(function (id) {
+          var campo = document.getElementById(id);
+          if (!campo || campo.selectedIndex <= 0 || !campo.selectedOptions || !campo.selectedOptions[0]) {
+            return '';
+          }
+          return campo.selectedOptions[0].textContent;
+        }).filter(Boolean);
+        printFiltros.textContent = seleccion.length
+          ? 'Filtros aplicados · ' + seleccion.join(' · ')
+          : 'Todos los reportes';
+      });
+    }
 
     var btnImprimir = document.getElementById('btn-imprimir');
     if (btnImprimir) {
@@ -720,6 +928,7 @@
             var nuevos = [];
             var duplicadosOmitidos = 0;
             var invalidosOmitidos = 0;
+            var ahoraImportacion = new Date();
 
             for (var c = 0; c < contenidos.length; c++) {
               var parsed;
@@ -739,6 +948,11 @@
               for (var r = 0; r < lista.length; r++) {
                 var rep = lista[r];
                 if (!rep || !rep.id || !rep.cuadra || !rep.categoria || !rep.actor || !rep.fecha_hora) {
+                  invalidosOmitidos += 1;
+                  continue;
+                }
+
+                if (!validarFechaIncidente(rep.fecha_hora, ahoraImportacion).valida) {
                   invalidosOmitidos += 1;
                   continue;
                 }
@@ -868,6 +1082,13 @@
     ESTADO: ESTADO,
     comprimirImagenCanvas: comprimirImagenCanvas,
     fusionarYRecalcular: fusionarYRecalcular,
-    cambiarVista: cambiarVista
+    cambiarVista: cambiarVista,
+    parsearFechaLocal: parsearFechaLocal,
+    validarFechaIncidente: validarFechaIncidente,
+    generarIdLocal: generarIdLocal
   };
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = global.AppMovilidad;
+  }
 })(typeof window !== 'undefined' ? window : globalThis);
