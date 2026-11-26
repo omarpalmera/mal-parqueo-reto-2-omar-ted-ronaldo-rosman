@@ -12,6 +12,29 @@
     invasion_anden: 'Invasión de andén por comercio o mercancía'
   };
 
+  var ETIQUETAS_ACTOR = {
+    vehiculo_particular: 'Vehículo particular',
+    motocicleta: 'Motocicleta',
+    vehiculo_carga: 'Vehículo de carga descargando',
+    mobiliario_comercial: 'Mobiliario comercial'
+  };
+
+  function porcentaje(conteo, total) {
+    return total ? Math.round(conteo / total * 1000) / 10 : 0;
+  }
+
+  function distribuir(conteos, etiquetas, total) {
+    var resultado = {};
+    Object.keys(conteos).forEach(function (clave) {
+      resultado[clave] = {
+        etiqueta: etiquetas[clave],
+        conteo: conteos[clave],
+        porcentaje: porcentaje(conteos[clave], total)
+      };
+    });
+    return resultado;
+  }
+
   /**
    * Construye un mapa rápido de vías por código para consultas O(1).
    * @param {Array} viasData
@@ -91,11 +114,9 @@
 
     var niveles = { Alto: 0, Medio: 0, Bajo: 0 };
     var franjas = { pico: 0, valle: 0 };
-    var conteoCategorias = {
-      doble_fila: 0,
-      bloqueo_rampa_cebra_paradero: 0,
-      invasion_anden: 0
-    };
+    var puntajesPorFranja = { pico: 0, valle: 0 };
+    var conteoCategorias = Object.fromEntries(Object.keys(ETIQUETAS_CATEGORIA).map(clave => [clave, 0]));
+    var conteoActores = Object.fromEntries(Object.keys(ETIQUETAS_ACTOR).map(clave => [clave, 0]));
     var puntajeTotal = 0;
 
     for (var i = 0; i < lista.length; i++) {
@@ -114,25 +135,17 @@
         niveles[nivel] = 1;
       }
 
-      if (franja === 'pico') franjas.pico += 1;
-      else franjas.valle += 1;
+      var periodo = franja === 'pico' ? 'pico' : 'valle';
+      franjas[periodo] += 1;
+      puntajesPorFranja[periodo] += puntaje;
+
+      if (Object.hasOwn(conteoActores, rep.actor)) {
+        conteoActores[rep.actor] += 1;
+      }
 
       if (conteoCategorias[rep.categoria] !== undefined) {
         conteoCategorias[rep.categoria] += 1;
       }
-    }
-
-    var categorias = {};
-    var claves = Object.keys(conteoCategorias);
-    for (var j = 0; j < claves.length; j++) {
-      var cat = claves[j];
-      var cnt = conteoCategorias[cat];
-      var pct = total > 0 ? Math.round((cnt / total) * 1000) / 10 : 0;
-      categorias[cat] = {
-        etiqueta: ETIQUETAS_CATEGORIA[cat] || cat,
-        conteo: cnt,
-        porcentaje: pct
-      };
     }
 
     return {
@@ -140,8 +153,48 @@
       puntajeTotal: puntajeTotal,
       niveles: niveles,
       franjas: franjas,
-      categorias: categorias
+      puntajesPorFranja: puntajesPorFranja,
+      categorias: distribuir(conteoCategorias, ETIQUETAS_CATEGORIA, total),
+      actores: distribuir(conteoActores, ETIQUETAS_ACTOR, total)
     };
+  }
+
+  function textoConteo(valor) {
+    return valor + (valor === 1 ? ' reporte' : ' reportes');
+  }
+
+  function renderizarBarras(id, distribucion, total) {
+    var panel = document.getElementById(id);
+    if (!panel) return;
+    if (!total) {
+      panel.innerHTML = '<p class="empty-state">Sin reportes para distribuir con estos filtros.</p>';
+      return;
+    }
+    // Las etiquetas proceden de los catálogos del tablero.
+    panel.innerHTML = Object.values(distribucion).map(function (fila) {
+      return `<div class="cat-bar-item">
+        <div class="cat-bar-header"><span>${fila.etiqueta}</span>
+          <strong>${textoConteo(fila.conteo)} · ${fila.porcentaje.toLocaleString('es-CO')}%</strong>
+        </div>
+        <progress class="cat-bar-track" aria-label="${fila.etiqueta}" max="100" value="${fila.porcentaje}"></progress>
+      </div>`;
+    }).join('');
+  }
+
+  function renderizarFranjas(contadores) {
+    var panel = document.getElementById('comparacion-franjas');
+    if (!panel) return;
+    panel.innerHTML = ['pico', 'valle'].map(function (franja) {
+      var conteo = contadores.franjas[franja];
+      var parte = porcentaje(conteo, contadores.total);
+      var puntos = contadores.puntajesPorFranja[franja];
+      return `<div class="franja-item">
+        <h4>Hora ${franja}</h4>
+        <div class="franja-conteo"><strong>${textoConteo(conteo)}</strong><span>${parte.toLocaleString('es-CO')}%</span></div>
+        <progress class="cat-bar-track" aria-label="Hora ${franja}" max="100" value="${parte}"></progress>
+        <p>${puntos} ${puntos === 1 ? 'punto acumulado' : 'puntos acumulados'}</p>
+      </div>`;
+    }).join('');
   }
 
   /**
@@ -158,7 +211,6 @@
     var elBajo = document.getElementById('kpi-bajo');
     var elPuntaje = document.getElementById('kpi-puntaje');
     var elEstado = document.getElementById('kpi-filtro-estado');
-    var elBarras = document.getElementById('barras-categorias');
 
     if (elTotal) elTotal.textContent = String(contadores.total);
     if (elAlto) elAlto.textContent = String(contadores.niveles.Alto || 0);
@@ -178,25 +230,9 @@
         ' valle)';
     }
 
-    if (elBarras) {
-      var html = '';
-      var claves = ['doble_fila', 'bloqueo_rampa_cebra_paradero', 'invasion_anden'];
-      for (var i = 0; i < claves.length; i++) {
-        var clave = claves[i];
-        var info = contadores.categorias[clave];
-        html +=
-          '<div class="cat-bar-item">' +
-          '<div class="cat-bar-header">' +
-          '<span>' + info.etiqueta + '</span>' +
-          '<strong>' + info.conteo + ' (' + info.porcentaje + '%)</strong>' +
-          '</div>' +
-          '<div class="cat-bar-track">' +
-          '<div class="cat-bar-fill cat-' + clave + '" style="width:' + info.porcentaje + '%"></div>' +
-          '</div>' +
-          '</div>';
-      }
-      elBarras.innerHTML = html;
-    }
+    renderizarBarras('barras-categorias', contadores.categorias, contadores.total);
+    renderizarBarras('barras-actores', contadores.actores, contadores.total);
+    renderizarFranjas(contadores);
   }
 
   var api = {

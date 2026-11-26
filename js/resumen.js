@@ -15,7 +15,7 @@
   var ETIQUETAS_ACTOR_CORTA = {
     vehiculo_particular: 'Vehículo particular',
     motocicleta: 'Motocicleta',
-    vehiculo_carga: 'Vehículo de carga',
+    vehiculo_carga: 'Vehículo de carga descargando',
     mobiliario_comercial: 'Mobiliario comercial'
   };
 
@@ -227,48 +227,34 @@
       fechaEl.textContent = 'Generado: ' + new Date().toLocaleString('es-CO');
     }
 
-    if (!Array.isArray(top5) || top5.length === 0) {
-      contenedor.innerHTML =
-        '<div class="empty-state">No hay reportes que coincidan con los filtros activos para calcular el Top 5.</div>';
+    contenedor.replaceChildren();
+    if (!top5 || !top5.length) {
+      var vacio = document.createElement('p');
+      vacio.className = 'empty-state';
+      vacio.textContent = 'Ninguna cuadra coincide. Prueba otra combinación de filtros.';
+      contenedor.appendChild(vacio);
     } else {
-      var html = '<div class="top5-lista">';
-      for (var i = 0; i < top5.length; i++) {
-        var item = top5[i];
-        var detalleCats = resumirDistribucion(item.categorias, ETIQUETAS_CATEGORIA_CORTA);
-        var detalleActores = resumirDistribucion(item.actores, ETIQUETAS_ACTOR_CORTA);
-        var claseVia = item.tipo_via === 'arterial' ? 'badge-arterial' : 'badge-secundaria';
-
-        html +=
-          '<article class="top5-card">' +
-          '<div class="top5-header">' +
-          '<div class="top5-rank">#' + item.posicion + '</div>' +
-          '<div class="top5-titulo">' +
-          '<h4>' + item.nombre + '</h4>' +
-          '<div class="top5-meta">' +
-          '<span class="badge-codigo">' + item.cuadra + '</span>' +
-          '<span class="badge-sector">' + item.sector + '</span>' +
-          '<span class="badge-via ' + claseVia + '">Vía ' + item.tipo_via + '</span>' +
-          '</div>' +
-          '</div>' +
-          '<div class="top5-score">' +
-          '<span class="score-num">' + item.puntajeTotal + '</span>' +
-          '<span class="score-label">pts acum.</span>' +
-          '</div>' +
-          '</div>' +
-          '<div class="top5-metrics">' +
-          '<span><strong>Reportes:</strong> ' + item.totalReportes + '</span>' +
-          '<span><strong>Alto en pico:</strong> ' + item.altosEnPico + '</span>' +
-          '<span><strong>Categorías:</strong> ' + detalleCats + '</span>' +
-          '<span><strong>Actores:</strong> ' + detalleActores + '</span>' +
-          '</div>' +
-          '<div class="top5-recomendacion rule-' + item.codigoRegla.toLowerCase() + '">' +
-          '<div class="rec-accion"><strong>Recomendación:</strong> ' + item.recomendacion + '</div>' +
-          '<div class="rec-regla"><strong>Regla aplicada:</strong> ' + item.reglaAplicada + '</div>' +
-          '</div>' +
-          '</article>';
-      }
-      html += '</div>';
-      contenedor.innerHTML = html;
+      var lista = document.createElement('ol');
+      lista.className = 'top5-lista';
+      var plantilla = document.getElementById('tarjeta-prioridad');
+      top5.forEach(function (item) {
+        var fila = document.createElement('li');
+        var tarjeta = plantilla.content.firstElementChild.cloneNode(true);
+        tarjeta.classList.add('rule-' + item.codigoRegla.toLowerCase());
+        tarjeta.querySelector('.top5-rank').textContent = '#' + item.posicion;
+        tarjeta.querySelector('h4').textContent = item.nombre;
+        tarjeta.querySelector('.score-num').textContent = item.puntajeTotal;
+        tarjeta.querySelector('.top5-meta').textContent = item.sector + ' · Vía ' + item.tipo_via + ' · ' +
+          item.totalReportes + (item.totalReportes === 1 ? ' reporte' : ' reportes');
+        tarjeta.querySelector('.rec-accion').textContent = item.recomendacion;
+        tarjeta.querySelector('.rec-regla').textContent = item.reglaAplicada;
+        var detalles = tarjeta.querySelectorAll('.top5-metrics p');
+        detalles[0].textContent = 'Categorías · ' + resumirDistribucion(item.categorias, ETIQUETAS_CATEGORIA_CORTA);
+        detalles[1].textContent = 'Actores · ' + resumirDistribucion(item.actores, ETIQUETAS_ACTOR_CORTA);
+        fila.appendChild(tarjeta);
+        lista.appendChild(fila);
+      });
+      contenedor.appendChild(lista);
     }
 
     renderizarCasosValidacion(criteriosData, reportesActuales);
@@ -297,26 +283,32 @@
       return;
     }
 
-    var html = '<div class="casos-grid">';
-    for (var j = 0; j < casos.length; j++) {
-      var rep = casos[j];
-      var d = rep.criticidad && rep.criticidad.desglose ? rep.criticidad.desglose : {};
-      var nivel = rep.criticidad ? rep.criticidad.nivel : '-';
-      var puntaje = rep.criticidad ? rep.criticidad.puntaje : 0;
-
-      html +=
-        '<div class="caso-card">' +
-        '<div class="caso-id"><strong>' + rep.id + '</strong> · ' + rep.cuadra + ' · ' + rep.fecha_hora.replace('T', ' ') + '</div>' +
-        '<div class="caso-formula">' +
-        'Categoría <code>' + rep.categoria + '</code> (<strong>' + d.ptsCategoria + '</strong>) + ' +
-        'Vía <code>' + d.tipoVia + '</code> (<strong>' + d.ptsVia + '</strong>) + ' +
-        'Franja <code>' + d.franja + '</code> (<strong>' + d.ptsFranja + '</strong>) = ' +
-        '<strong>' + puntaje + ' pts (' + nivel + ')</strong>' +
-        '</div>' +
-        '</div>';
-    }
-    html += '</div>';
-    contenedor.innerHTML = html;
+    var grid = document.createElement('div');
+    grid.className = 'casos-grid';
+    casos.forEach(function (rep) {
+      var caso = document.createElement('article');
+      caso.className = 'caso-card';
+      var titulo = document.createElement('strong');
+      titulo.textContent = rep.id + ' · Nivel ' + rep.criticidad.nivel.toLowerCase() +
+        ' · ' + rep.criticidad.puntaje + ' puntos';
+      var fecha = document.createElement('p');
+      fecha.textContent = rep.fecha_hora.replace('T', ' ');
+      var d = rep.criticidad.desglose;
+      var factores = document.createElement('ul');
+      factores.className = 'score-pills';
+      [
+        [ETIQUETAS_CATEGORIA_CORTA[rep.categoria] || 'Categoría', d.ptsCategoria],
+        ['Vía ' + d.tipoVia, d.ptsVia],
+        ['Hora ' + d.franja, d.ptsFranja]
+      ].forEach(function (factor) {
+        var chip = document.createElement('li');
+        chip.textContent = factor[0] + ' · ' + factor[1];
+        factores.appendChild(chip);
+      });
+      caso.append(titulo, fecha, factores);
+      grid.appendChild(caso);
+    });
+    contenedor.replaceChildren(grid);
   }
 
   var api = {

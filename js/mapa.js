@@ -174,39 +174,41 @@
   }
 
   /**
-   * Construye el HTML del popup de cada reporte individual.
+   * Crea el contenido del punto con los datos de su reporte.
    */
-  function construirPopupHTML(rep, viaInfo) {
-    var d = rep.criticidad && rep.criticidad.desglose ? rep.criticidad.desglose : {};
-    var puntaje = rep.criticidad ? rep.criticidad.puntaje : 0;
-    var nivel = rep.criticidad ? rep.criticidad.nivel : 'Bajo';
-    var nombreVia = viaInfo ? viaInfo.nombre : rep.cuadra;
-    var fotoSrc = resolverRutaFoto(rep.foto);
-
-    var html =
-      '<div class="map-popup">' +
-      '<div class="popup-top">' +
-      '<strong>' + rep.id + '</strong> ' +
-      '<span class="pill-nivel pill-' + nivel.toLowerCase() + '">' + nivel + ' (' + puntaje + ' pts)</span>' +
-      '</div>' +
-      '<p><strong>Cuadra:</strong> ' + nombreVia + ' (<code>' + rep.cuadra + '</code>)</p>' +
-      '<p><strong>Categoría:</strong> ' + (ETIQUETAS_CAT[rep.categoria] || rep.categoria) + '</p>' +
-      '<p><strong>Actor:</strong> ' + (ETIQUETAS_ACT[rep.actor] || rep.actor) + '</p>' +
-      '<p><strong>Fecha/Hora:</strong> ' + (rep.fecha_hora || '').replace('T', ' ') + ' (' + (d.franja || '-') + ')</p>' +
-      '<p class="popup-desglose"><strong>Desglose:</strong> Cat ' + (d.ptsCategoria || 0) +
-      ' + Vía ' + (d.ptsVia || 0) +
-      ' + Franja ' + (d.ptsFranja || 0) +
-      ' = <strong>' + puntaje + '</strong></p>';
-
-    if (fotoSrc) {
-      html +=
-        '<div class="popup-foto">' +
-        '<img src="' + fotoSrc + '" alt="Evidencia anonimizada ' + rep.id + '" loading="lazy">' +
-        '</div>';
+  function construirPopup(rep, viaInfo) {
+    var resultado = rep.criticidad;
+    var d = resultado.desglose;
+    var popup = document.createElement('div');
+    popup.className = 'map-popup';
+    var via = document.createElement('strong');
+    via.textContent = viaInfo ? viaInfo.nombre : rep.cuadra;
+    var nivel = document.createElement('span');
+    nivel.className = 'pill-nivel pill-' + resultado.nivel.toLowerCase();
+    nivel.textContent = 'Nivel ' + resultado.nivel.toLowerCase() + ' · ' + resultado.puntaje + ' puntos';
+    var incidente = document.createElement('p');
+    incidente.textContent = (ETIQUETAS_CAT[rep.categoria] || 'Otra categoría') + ' · ' +
+      (ETIQUETAS_ACT[rep.actor] || 'Otro actor');
+    var fecha = document.createElement('p');
+    fecha.textContent = rep.id + ' · ' + String(rep.fecha_hora).replace('T', ' ');
+    var factores = document.createElement('ul');
+    factores.className = 'score-pills';
+    ['Categoría · ' + d.ptsCategoria, 'Vía ' + d.tipoVia + ' · ' + d.ptsVia,
+      'Hora ' + d.franja + ' · ' + d.ptsFranja].forEach(function (texto) {
+      var chip = document.createElement('li');
+      chip.textContent = texto;
+      factores.appendChild(chip);
+    });
+    popup.append(via, nivel, incidente, fecha, factores);
+    var ruta = resolverRutaFoto(rep.foto);
+    if (ruta) {
+      var foto = document.createElement('img');
+      foto.src = ruta;
+      foto.alt = 'Foto del incidente';
+      foto.loading = 'lazy';
+      popup.appendChild(foto);
     }
-
-    html += '</div>';
-    return html;
+    return popup;
   }
 
   /**
@@ -224,10 +226,8 @@
       modo: modoCapa || 'ambas'
     };
 
-    if (!mapOperativo) {
-      inicializarMapaOperativo();
-    }
-    if (!mapOperativo) return;
+    if (!document.getElementById('map').clientWidth) return;
+    if (!inicializarMapaOperativo()) return;
 
     var viasPorId = {};
     for (var v = 0; v < ultimoEstadoCapas.viasData.length; v++) {
@@ -267,7 +267,7 @@
           fillColor: color,
           fillOpacity: 0.92
         });
-        marcador.bindPopup(construirPopupHTML(rep, viasPorId[rep.cuadra]));
+        marcador.bindPopup(construirPopup(rep, viasPorId[rep.cuadra]));
         capaPuntos.addLayer(marcador);
       }
     }
@@ -317,38 +317,22 @@
    */
   function refrescarTamanoMapa(vistaActiva) {
     if (vistaActiva === 'captura') {
-      if (miniMap) {
-        miniMap.invalidateSize(true);
-        setTimeout(function () {
-          miniMap.invalidateSize(true);
-        }, 120);
+      if (capaCalor && mapOperativo.hasLayer(capaCalor)) {
+        mapOperativo.removeLayer(capaCalor);
+        capaCalor = null;
       }
+      if (miniMap) miniMap.invalidateSize({ pan: false });
       return;
     }
 
-    if (!mapOperativo) {
-      inicializarMapaOperativo();
-    }
-    if (mapOperativo) {
-      mapOperativo.invalidateSize(true);
-      actualizarCapasMapa(
-        ultimoEstadoCapas.reportes,
-        ultimoEstadoCapas.viasData,
-        ultimoEstadoCapas.criteriosData,
-        ultimoEstadoCapas.modo
-      );
-      setTimeout(function () {
-        if (mapOperativo) {
-          mapOperativo.invalidateSize(true);
-          actualizarCapasMapa(
-            ultimoEstadoCapas.reportes,
-            ultimoEstadoCapas.viasData,
-            ultimoEstadoCapas.criteriosData,
-            ultimoEstadoCapas.modo
-          );
-        }
-      }, 140);
-    }
+    if (!inicializarMapaOperativo()) return;
+    mapOperativo.invalidateSize({ pan: false });
+    actualizarCapasMapa(
+      ultimoEstadoCapas.reportes,
+      ultimoEstadoCapas.viasData,
+      ultimoEstadoCapas.criteriosData,
+      ultimoEstadoCapas.modo
+    );
   }
 
   var api = {

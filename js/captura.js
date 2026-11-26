@@ -76,7 +76,7 @@
     } catch (err) {
       mostrarMensaje(
         idBannerError || 'captura-estado',
-        'Error al guardar en el navegador (límite ~5 MB alcanzado): ' + err.message,
+        'No se pudo guardar el reporte en este dispositivo. Comprueba el espacio disponible y vuelve a intentarlo.',
         'error'
       );
       return false;
@@ -92,15 +92,15 @@
    * @returns {Array}
    */
   function fusionarYRecalcular(semilla, locales) {
-    var vistos = {};
+    var vistos = new Set();
     var resultado = [];
 
     function procesarLista(lista) {
       if (!Array.isArray(lista)) return;
       for (var i = 0; i < lista.length; i++) {
         var item = lista[i];
-        if (!item || !item.id || vistos[item.id]) continue;
-        vistos[item.id] = true;
+        if (!item || !item.id || vistos.has(item.id)) continue;
+        vistos.add(item.id);
 
         var copia = Object.assign({}, item);
         copia.criticidad = global.Criticidad.calcularCriticidad(
@@ -143,12 +143,16 @@
           canvas.width = ancho;
           canvas.height = alto;
 
-          var ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, ancho, alto);
+          try {
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, ancho, alto);
 
-          var dataUrl = canvas.toDataURL('image/jpeg', CALIDAD_JPEG);
-          var kb = Math.round((dataUrl.length * 0.75) / 1024);
-          resolve({ dataUrl: dataUrl, ancho: ancho, alto: alto, kb: kb });
+            var dataUrl = canvas.toDataURL('image/jpeg', CALIDAD_JPEG);
+            var kb = Math.round((dataUrl.length * 0.75) / 1024);
+            resolve({ dataUrl: dataUrl, ancho: ancho, alto: alto, kb: kb });
+          } catch (err) {
+            reject(err);
+          }
         };
         img.onerror = function () {
           reject(new Error('El archivo seleccionado no es una imagen válida.'));
@@ -187,7 +191,7 @@
         var v = ESTADO.vias[i];
         var opt = document.createElement('option');
         opt.value = v.id;
-        opt.textContent = v.nombre + ' (' + v.tipo_via.toUpperCase() + ')';
+        opt.textContent = v.nombre;
         selectCuadraCaptura.appendChild(opt);
       }
     }
@@ -198,7 +202,7 @@
         var vf = ESTADO.vias[j];
         var optF = document.createElement('option');
         optF.value = vf.id;
-        optF.textContent = vf.id + ' · ' + vf.nombre;
+        optF.textContent = vf.nombre;
         selectCuadraFiltro.appendChild(optF);
       }
     }
@@ -209,7 +213,7 @@
         var sec = ESTADO.vias[k].sector;
         if (sec && sectores.indexOf(sec) === -1) sectores.push(sec);
       }
-      selectSectorFiltro.innerHTML = '<option value="todos">Todos los sectores</option>';
+      selectSectorFiltro.innerHTML = '<option value="todos">Todos</option>';
       for (var s = 0; s < sectores.length; s++) {
         var optS = document.createElement('option');
         optS.value = sectores[s];
@@ -244,6 +248,10 @@
     actualizarVistaPreviaCriticidad();
   }
 
+  function puntos(valor) {
+    return valor + (valor === 1 ? ' punto' : ' puntos');
+  }
+
   /**
    * Calcula y muestra en vivo el puntaje estimado en el formulario de captura rápida.
    */
@@ -263,10 +271,22 @@
       ESTADO.criterios
     );
 
-    elPreview.innerHTML =
-      'Criticidad estimada: <span class="pill-nivel pill-' + res.nivel.toLowerCase() + '">' +
-      res.nivel + ' (' + res.puntaje + ' pts)</span> ' +
-      '<small>[Cat ' + res.desglose.ptsCategoria + ' + Vía ' + res.desglose.ptsVia + ' + Franja ' + res.desglose.ptsFranja + ' (' + res.desglose.franja + ')]</small>';
+    var nivel = elPreview.querySelector('#nivel-estimado');
+    nivel.className = 'pill-nivel pill-' + res.nivel.toLowerCase();
+    nivel.textContent = 'Nivel ' + res.nivel.toLowerCase() + ' · ' + puntos(res.puntaje);
+
+    var desglose = res.desglose;
+    var lista = elPreview.querySelector('.score-pills');
+    lista.replaceChildren();
+    [
+      ['Categoría', desglose.ptsCategoria],
+      ['Vía ' + desglose.tipoVia, desglose.ptsVia],
+      ['Hora ' + desglose.franja, desglose.ptsFranja]
+    ].forEach(function (factor) {
+      var item = document.createElement('li');
+      item.textContent = factor[0] + ' · ' + puntos(factor[1]);
+      lista.appendChild(item);
+    });
   }
 
   /**
@@ -275,7 +295,7 @@
   function refrescarTableroCompleto() {
     var totalEl = document.getElementById('header-total-badge');
     if (totalEl) {
-      totalEl.textContent = ESTADO.reportesConsolidados.length + ' reportes';
+      totalEl.textContent = ESTADO.reportesConsolidados.length + ' reportes activos';
     }
 
     var filtrados = global.Filtros.filtrarReportes(
@@ -340,11 +360,15 @@
     var btnGps = document.getElementById('btn-gps');
     var gpsTexto = document.getElementById('gps-coordenadas-texto');
 
+    var gpsEtiqueta = btnGps.querySelector('span');
+
     function aplicarCoordenadas(lat, lng, origenTexto, viaSugerida) {
       if (inputLat) inputLat.value = lat.toFixed(6);
       if (inputLng) inputLng.value = lng.toFixed(6);
       if (gpsTexto) {
-        gpsTexto.textContent = origenTexto + ': ' + lat.toFixed(5) + ', ' + lng.toFixed(5);
+        mostrarMensaje('gps-estado', '', '');
+        gpsTexto.textContent = origenTexto;
+        gpsTexto.title = lat.toFixed(5) + ', ' + lng.toFixed(5);
       }
       if (viaSugerida && selectCuadra) {
         selectCuadra.value = viaSugerida.id;
@@ -354,7 +378,7 @@
 
     var latDefault = ESTADO.vias[0] ? ESTADO.vias[0].lat : 11.2421;
     var lngDefault = ESTADO.vias[0] ? ESTADO.vias[0].lng : -74.2105;
-    aplicarCoordenadas(latDefault, lngDefault, 'Punto inicial (Centro / Cra 5)', ESTADO.vias[0]);
+    aplicarCoordenadas(latDefault, lngDefault, 'Punto inicial', ESTADO.vias[0]);
 
     global.MapaMovilidad.inicializarMiniMapa(
       latDefault,
@@ -382,16 +406,16 @@
     if (btnGps) {
       btnGps.addEventListener('click', function () {
         if (!navigator.geolocation) {
-          mostrarMensaje('captura-estado', 'Tu navegador no soporta geolocalización GPS. Toca el mini-mapa.', 'warning');
+          mostrarMensaje('gps-estado', 'Tu navegador no soporta geolocalización GPS. Toca el mini-mapa.', 'warning');
           return;
         }
         btnGps.disabled = true;
-        btnGps.textContent = 'Obteniendo GPS...';
+        gpsEtiqueta.textContent = 'Buscando ubicación…';
 
         navigator.geolocation.getCurrentPosition(
           function (pos) {
             btnGps.disabled = false;
-            btnGps.textContent = 'Usar mi ubicación GPS';
+            gpsEtiqueta.textContent = 'Usar mi ubicación';
             var lat = pos.coords.latitude;
             var lng = pos.coords.longitude;
             var viaCercana = global.MapaMovilidad.encontrarCuadraMasCercana(lat, lng, ESTADO.vias);
@@ -401,18 +425,18 @@
             var fueraZona = lat < 11.2390 || lat > 11.2460 || lng < -74.2150 || lng > -74.2070;
             if (fueraZona) {
               mostrarMensaje(
-                'captura-estado',
-                'Tu GPS está fuera del polígono Centro Histórico / Campo Serrano. Puedes ajustar el pin tocando el mini-mapa.',
+                'gps-estado',
+                'Tu ubicación está fuera de la zona de estudio. Toca el mapa para ajustar el punto.',
                 'warning'
               );
             } else {
-              mostrarMensaje('captura-estado', 'Ubicación GPS fijada dentro de la zona de estudio.', 'ok');
+              mostrarMensaje('gps-estado', 'Ubicación GPS fijada dentro de la zona de estudio.', 'ok');
             }
           },
           function () {
             btnGps.disabled = false;
-            btnGps.textContent = 'Usar mi ubicación GPS';
-            mostrarMensaje('captura-estado', 'No se pudo obtener permiso GPS. Toca directamente el mini-mapa para ubicar el pin.', 'warning');
+            gpsEtiqueta.textContent = 'Usar mi ubicación';
+            mostrarMensaje('gps-estado', 'No se pudo obtener permiso GPS. Toca directamente el mini-mapa para ubicar el pin.', 'warning');
           },
           { enableHighAccuracy: true, timeout: 7000 }
         );
@@ -430,6 +454,12 @@
     var previewFoto = document.getElementById('foto-preview');
     var infoFoto = document.getElementById('foto-info');
     var btnLimpiarFoto = document.getElementById('btn-quitar-foto');
+    var zonaFoto = form.querySelector('.foto-dropzone');
+    var confirmarQuitar = document.getElementById('confirmar-quitar');
+    var cancelarQuitar = document.getElementById('cancelar-quitar');
+    var btnEnviar = document.getElementById('btn-enviar-reporte');
+    var revisionFoto = 0;
+    btnEnviar.disabled = false;
 
     if (inputFecha) {
       inputFecha.value = formatearFechaHoraLocal(new Date());
@@ -441,48 +471,81 @@
       radios[r].addEventListener('change', actualizarVistaPreviaCriticidad);
     }
 
-    if (inputFoto) {
-      inputFoto.addEventListener('change', function () {
-        var archivo = inputFoto.files && inputFoto.files[0];
-        if (!archivo) return;
-
-        if (infoFoto) infoFoto.textContent = 'Comprimiendo foto a máximo 800 px...';
-        comprimirImagenCanvas(archivo)
-          .then(function (res) {
-            ESTADO.fotoBase64Actual = res.dataUrl;
-            if (previewFoto) {
-              previewFoto.src = res.dataUrl;
-              previewFoto.hidden = false;
-            }
-            if (btnLimpiarFoto) btnLimpiarFoto.hidden = false;
-            if (infoFoto) {
-              infoFoto.textContent =
-                'Foto lista y comprimida (' + res.ancho + 'x' + res.alto + ' px, ~' + res.kb + ' KB). Sin placas ni rostros.';
-            }
-          })
-          .catch(function (err) {
-            ESTADO.fotoBase64Actual = '';
-            mostrarMensaje('captura-estado', err.message, 'error');
-          });
-      });
+    function mostrarFoto(dataUrl) {
+      ESTADO.fotoBase64Actual = dataUrl;
+      if (dataUrl) previewFoto.src = dataUrl;
+      else previewFoto.removeAttribute('src');
+      previewFoto.hidden = !dataUrl;
+      btnLimpiarFoto.hidden = !dataUrl;
+      confirmarQuitar.hidden = true;
+      inputFoto.value = '';
     }
 
-    if (btnLimpiarFoto) {
-      btnLimpiarFoto.addEventListener('click', function () {
-        ESTADO.fotoBase64Actual = '';
-        if (inputFoto) inputFoto.value = '';
-        if (previewFoto) {
-          previewFoto.src = '';
-          previewFoto.hidden = true;
-        }
-        if (infoFoto) infoFoto.textContent = 'Opcional. Se redimensiona automáticamente a máx. 800 px.';
-        btnLimpiarFoto.hidden = true;
-      });
+    async function cargarFoto(archivo) {
+      if (!archivo) return;
+      var revision = ++revisionFoto;
+      btnEnviar.disabled = true;
+      confirmarQuitar.hidden = true;
+      btnLimpiarFoto.hidden = !ESTADO.fotoBase64Actual;
+      infoFoto.textContent = 'Preparando la foto…';
+      try {
+        var foto = await comprimirImagenCanvas(archivo);
+        if (revision !== revisionFoto) return;
+        mostrarFoto(foto.dataUrl);
+        infoFoto.textContent = 'Foto lista para registrar.';
+      } catch (err) {
+        if (revision !== revisionFoto) return;
+        inputFoto.value = '';
+        infoFoto.textContent = ESTADO.fotoBase64Actual
+          ? 'No se pudo abrir esa imagen. Se conserva la foto anterior.'
+          : 'No se pudo abrir esa imagen. Prueba con otra foto.';
+      } finally {
+        if (revision === revisionFoto) btnEnviar.disabled = false;
+      }
     }
+
+    inputFoto.addEventListener('change', function () {
+      cargarFoto(inputFoto.files[0]);
+    });
+    zonaFoto.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      zonaFoto.classList.add('dragging');
+    });
+    zonaFoto.addEventListener('dragleave', function (e) {
+      if (!zonaFoto.contains(e.relatedTarget)) zonaFoto.classList.remove('dragging');
+    });
+    zonaFoto.addEventListener('drop', function (e) {
+      e.preventDefault();
+      zonaFoto.classList.remove('dragging');
+      cargarFoto(e.dataTransfer.files[0]);
+    });
+
+    btnLimpiarFoto.addEventListener('click', function () {
+      btnLimpiarFoto.hidden = true;
+      confirmarQuitar.hidden = false;
+      cancelarQuitar.focus();
+    });
+    cancelarQuitar.addEventListener('click', function () {
+      confirmarQuitar.hidden = true;
+      btnLimpiarFoto.hidden = false;
+      btnLimpiarFoto.focus();
+    });
+    document.getElementById('confirmar-foto').addEventListener('click', function () {
+      ++revisionFoto;
+      mostrarFoto('');
+      infoFoto.textContent = 'Foto retirada.';
+      var revisionRetirada = revisionFoto;
+      setTimeout(function () {
+        if (revisionFoto === revisionRetirada) infoFoto.textContent = '';
+      }, 3000);
+      btnEnviar.disabled = false;
+      inputFoto.focus();
+    });
 
     if (form) {
       form.addEventListener('submit', function (e) {
         e.preventDefault();
+        if (btnEnviar.disabled) return;
 
         var lat = parseFloat((document.getElementById('lat') || {}).value);
         var lng = parseFloat((document.getElementById('lng') || {}).value);
@@ -523,21 +586,14 @@
         ESTADO.reportesConsolidados = fusionarYRecalcular(ESTADO.reportesSemilla, ESTADO.reportesLocales);
         refrescarTableroCompleto();
 
-        // Reiniciar foto y actualizar hora para el siguiente reporte rápido
-        ESTADO.fotoBase64Actual = '';
-        if (inputFoto) inputFoto.value = '';
-        if (previewFoto) {
-          previewFoto.src = '';
-          previewFoto.hidden = true;
-        }
-        if (btnLimpiarFoto) btnLimpiarFoto.hidden = true;
-        if (infoFoto) infoFoto.textContent = 'Opcional. Se redimensiona automáticamente a máx. 800 px.';
+        mostrarFoto('');
+        infoFoto.textContent = '';
         if (inputFecha) inputFecha.value = formatearFechaHoraLocal(new Date());
         actualizarVistaPreviaCriticidad();
 
         mostrarMensaje(
           'captura-estado',
-          'Reporte ' + nuevoReporte.id + ' guardado (' + nuevoReporte.criticidad.nivel + ', ' + nuevoReporte.criticidad.puntaje + ' pts). Ya aparece en el mapa.',
+          'Reporte guardado. Nivel ' + nuevoReporte.criticidad.nivel.toLowerCase() + ' · ' + puntos(nuevoReporte.criticidad.puntaje) + '.',
           'ok'
         );
       });
@@ -590,11 +646,24 @@
         var modo = ev.currentTarget.getAttribute('data-modo-capa');
         ESTADO.modoCapa = modo;
         for (var j = 0; j < botonesCapa.length; j++) {
-          botonesCapa[j].classList.toggle('active', botonesCapa[j] === ev.currentTarget);
+          var activo = botonesCapa[j] === ev.currentTarget;
+          botonesCapa[j].classList.toggle('active', activo);
+          botonesCapa[j].setAttribute('aria-pressed', String(activo));
         }
-        refrescarTableroCompleto();
+        var filtrados = global.Filtros.filtrarReportes(ESTADO.reportesConsolidados, ESTADO.filtros, ESTADO.vias);
+        global.MapaMovilidad.actualizarCapasMapa(filtrados, ESTADO.vias, ESTADO.criterios, modo);
       });
     }
+
+    global.addEventListener('beforeprint', function () {
+      var seleccion = Object.keys(mapaIds).map(function (id) {
+        var campo = document.getElementById(id);
+        return campo.selectedIndex > 0 ? campo.selectedOptions[0].textContent : '';
+      }).filter(Boolean);
+      document.getElementById('print-filtros').textContent = seleccion.length
+        ? 'Filtros aplicados · ' + seleccion.join(' · ')
+        : 'Todos los reportes';
+    });
 
     var btnImprimir = document.getElementById('btn-imprimir');
     if (btnImprimir) {
@@ -647,12 +716,8 @@
 
         Promise.all(promesas)
           .then(function (contenidos) {
-            var idsExistentes = {};
-            for (var e = 0; e < ESTADO.reportesConsolidados.length; e++) {
-              idsExistentes[ESTADO.reportesConsolidados[e].id] = true;
-            }
-
-            var nuevosAgregados = 0;
+            var idsExistentes = new Set(ESTADO.reportesConsolidados.map(function (rep) { return rep.id; }));
+            var nuevos = [];
             var duplicadosOmitidos = 0;
             var invalidosOmitidos = 0;
 
@@ -679,25 +744,27 @@
                 }
 
                 // Comparación estricta por reporte.id para impedir duplicados
-                if (idsExistentes[rep.id]) {
+                if (idsExistentes.has(rep.id)) {
                   duplicadosOmitidos += 1;
                   continue;
                 }
 
-                idsExistentes[rep.id] = true;
+                idsExistentes.add(rep.id);
                 var copia = Object.assign({}, rep);
                 copia.criticidad = global.Criticidad.calcularCriticidad(
                   copia,
                   ESTADO.vias,
                   ESTADO.criterios
                 );
-                ESTADO.reportesLocales.push(copia);
-                nuevosAgregados += 1;
+                nuevos.push(copia);
               }
             }
 
-            if (nuevosAgregados > 0) {
-              if (!guardarLocalStorage(ESTADO.reportesLocales, 'io-estado')) return;
+            if (nuevos.length) {
+              var locales = ESTADO.reportesLocales.concat(nuevos);
+              inputImportar.value = '';
+              if (!guardarLocalStorage(locales, 'io-estado')) return;
+              ESTADO.reportesLocales = locales;
               ESTADO.reportesConsolidados = fusionarYRecalcular(
                 ESTADO.reportesSemilla,
                 ESTADO.reportesLocales
@@ -708,12 +775,12 @@
             mostrarMensaje(
               'io-estado',
               'Importación completada: ' +
-                nuevosAgregados +
+                nuevos.length +
                 ' registros nuevos agregados, ' +
                 duplicadosOmitidos +
                 ' duplicados omitidos' +
                 (invalidosOmitidos > 0 ? ', ' + invalidosOmitidos + ' inválidos.' : '.'),
-              nuevosAgregados > 0 ? 'ok' : 'warning'
+              nuevos.length > 0 ? 'ok' : 'warning'
             );
             inputImportar.value = '';
           })
@@ -781,14 +848,13 @@
         configurarFormularioCaptura();
         configurarTablero();
         configurarExportarImportar();
-        global.MapaMovilidad.inicializarMapaOperativo();
         refrescarTableroCompleto();
       })
       .catch(function (err) {
         console.error(err);
         mostrarMensaje(
           'captura-estado',
-          'No se pudieron cargar los datos JSON iniciales. Ejecuta la app mediante Live Server o GitHub Pages.',
+          'No se pudieron cargar los datos de la zona. Comprueba la conexión y vuelve a cargar la página.',
           'error'
         );
       });
