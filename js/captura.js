@@ -445,10 +445,36 @@
   /**
    * Sincroniza filtros, mapa, contadores y Top 5 del Resumen Operativo.
    */
+  function describirFiltrosActivos() {
+    var f = ESTADO.filtros;
+    var partes = [];
+    if (f.sector && f.sector !== 'todos') partes.push('Sector: ' + f.sector);
+    if (f.cuadra && f.cuadra !== 'todas') partes.push('Cuadra: ' + f.cuadra);
+    if (f.franja && f.franja !== 'todas') partes.push('Franja: Hora ' + f.franja);
+    if (f.categoria && f.categoria !== 'todas') {
+      var etCat = (global.Filtros && global.Filtros.ETIQUETAS_CATEGORIA && global.Filtros.ETIQUETAS_CATEGORIA[f.categoria]) || f.categoria;
+      partes.push('Categoría: ' + etCat);
+    }
+    if (f.actor && f.actor !== 'todos') {
+      var etAct = (global.Filtros && global.Filtros.ETIQUETAS_ACTOR && global.Filtros.ETIQUETAS_ACTOR[f.actor]) || f.actor;
+      partes.push('Actor: ' + etAct);
+    }
+    return partes.length ? 'Filtros aplicados: ' + partes.join(' · ') : 'Filtros aplicados: Ninguno (todos los reportes)';
+  }
+
   function refrescarTableroCompleto(opcionesMapa) {
     var totalEl = document.getElementById('header-total-badge');
     if (totalEl) {
-      totalEl.textContent = ESTADO.reportesConsolidados.length + ' reportes activos';
+      var nLocales = ESTADO.reportesLocales.length;
+      totalEl.textContent =
+        ESTADO.reportesConsolidados.length +
+        ' reportes activos' +
+        (nLocales > 0 ? ' (' + nLocales + (nLocales === 1 ? ' local)' : ' locales)') : '');
+    }
+
+    var printFiltrosEl = document.getElementById('print-filtros');
+    if (printFiltrosEl) {
+      printFiltrosEl.textContent = describirFiltrosActivos();
     }
 
     var filtrados = global.Filtros.filtrarReportes(
@@ -1109,7 +1135,7 @@
         if (elFranja) elFranja.value = 'todas';
         if (elCategoria) elCategoria.value = 'todas';
         if (elActor) elActor.value = 'todos';
-        refrescarTableroCompleto();
+        refrescarTableroCompleto({ ajustarVista: true });
       });
     }
 

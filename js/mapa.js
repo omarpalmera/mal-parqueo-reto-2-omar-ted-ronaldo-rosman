@@ -252,6 +252,7 @@
 
     var maxTeorico = calcularMaximoTeorico(ultimoEstadoCapas.criteriosData);
     var puntosCalor = [];
+    var coordsUsadas = {};
 
     for (var i = 0; i < ultimoEstadoCapas.reportes.length; i++) {
       var rep = ultimoEstadoCapas.reportes[i];
@@ -266,8 +267,21 @@
       puntosCalor.push([lat, lng, intensidad]);
 
       if (mostrarPuntos && capaPuntos) {
+        var claveCoord = lat.toFixed(5) + ',' + lng.toFixed(5);
+        var repeticion = coordsUsadas[claveCoord] || 0;
+        coordsUsadas[claveCoord] = repeticion + 1;
+
+        var latVis = lat;
+        var lngVis = lng;
+        if (repeticion > 0) {
+          var angulo = repeticion * 2.39996; // ángulo áureo para distribuir sin superposición
+          var radio = 0.000035 * Math.ceil(repeticion / 6);
+          latVis = lat + Math.sin(angulo) * radio;
+          lngVis = lng + Math.cos(angulo) * radio;
+        }
+
         var color = COLORES_NIVEL[nivel] || '#2563eb';
-        var marcador = L.circleMarker([lat, lng], {
+        var marcador = L.circleMarker([latVis, lngVis], {
           radius: nivel === 'Alto' ? 8 : 7,
           color: '#ffffff',
           weight: 2,

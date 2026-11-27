@@ -380,13 +380,28 @@
     var casoA = null;
     var casoB = null;
     for (var i = 0; i < reportesActuales.length; i++) {
-      if (reportesActuales[i] && reportesActuales[i].id === 'MP-014') casoA = reportesActuales[i];
-      if (reportesActuales[i] && reportesActuales[i].id === 'MP-026') casoB = reportesActuales[i];
+      var r = reportesActuales[i];
+      if (!r || !r.criticidad) continue;
+      var niv = r.criticidad.nivel;
+      var fr = r.criticidad.desglose && r.criticidad.desglose.franja;
+      if (!casoA && niv === 'Alto' && fr === 'pico') casoA = r;
+      if (!casoB && niv !== 'Alto' && fr === 'valle') casoB = r;
+      if (casoA && casoB) break;
     }
     if (!casoA) {
       for (var a = 0; a < reportesActuales.length; a++) {
         if (reportesActuales[a] && reportesActuales[a] !== casoB) {
-          casoA = reportesActuales[a];
+          if (reportesActuales[a].criticidad && reportesActuales[a].criticidad.nivel === 'Alto') {
+            casoA = reportesActuales[a];
+            break;
+          }
+        }
+      }
+    }
+    if (!casoA) {
+      for (var a2 = 0; a2 < reportesActuales.length; a2++) {
+        if (reportesActuales[a2] && reportesActuales[a2] !== casoB) {
+          casoA = reportesActuales[a2];
           break;
         }
       }
@@ -394,7 +409,17 @@
     if (!casoB) {
       for (var b = reportesActuales.length - 1; b >= 0; b--) {
         if (reportesActuales[b] && reportesActuales[b] !== casoA) {
-          casoB = reportesActuales[b];
+          if (reportesActuales[b].criticidad && reportesActuales[b].criticidad.nivel !== 'Alto') {
+            casoB = reportesActuales[b];
+            break;
+          }
+        }
+      }
+    }
+    if (!casoB) {
+      for (var b2 = reportesActuales.length - 1; b2 >= 0; b2--) {
+        if (reportesActuales[b2] && reportesActuales[b2] !== casoA) {
+          casoB = reportesActuales[b2];
           break;
         }
       }
