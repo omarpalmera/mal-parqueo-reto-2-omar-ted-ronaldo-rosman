@@ -445,7 +445,7 @@
   /**
    * Sincroniza filtros, mapa, contadores y Top 5 del Resumen Operativo.
    */
-  function refrescarTableroCompleto() {
+  function refrescarTableroCompleto(opcionesMapa) {
     var totalEl = document.getElementById('header-total-badge');
     if (totalEl) {
       totalEl.textContent = ESTADO.reportesConsolidados.length + ' reportes activos';
@@ -474,7 +474,8 @@
         filtrados,
         ESTADO.vias,
         ESTADO.criterios,
-        ESTADO.modoCapa
+        ESTADO.modoCapa,
+        opcionesMapa
       );
     }
   }
@@ -1051,9 +1052,24 @@
         if (claveFiltro === 'sector') {
           actualizarOpcionesCuadraFiltro(el.value);
         }
-        refrescarTableroCompleto();
+        refrescarTableroCompleto({ ajustarVista: true });
       });
     });
+
+    var top5Container = document.getElementById('top5-container');
+    if (top5Container) {
+      top5Container.addEventListener('cuadra:enfocar', function (ev) {
+        var cuadraId = ev && ev.detail ? ev.detail.cuadra : '';
+        if (!cuadraId || !global.MapaMovilidad || typeof global.MapaMovilidad.enfocarCuadra !== 'function') return;
+        var filtrados = global.Filtros.filtrarReportes(
+          ESTADO.reportesConsolidados,
+          ESTADO.filtros,
+          ESTADO.vias,
+          ESTADO.criterios
+        );
+        global.MapaMovilidad.enfocarCuadra(cuadraId, ESTADO.vias, filtrados);
+      });
+    }
 
     var btnLimpiarFiltros = document.getElementById('btn-limpiar-filtros');
     if (btnLimpiarFiltros) {

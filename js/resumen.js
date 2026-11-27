@@ -338,6 +338,28 @@
           tarjeta = construirTarjetaFallback(item);
         }
 
+        tarjeta.setAttribute('data-cuadra', item.cuadra);
+        tarjeta.setAttribute('role', 'button');
+        tarjeta.setAttribute('tabindex', '0');
+        tarjeta.setAttribute('title', 'Haz clic para enfocar esta cuadra en el mapa');
+        tarjeta.style.cursor = 'pointer';
+
+        var emitirEnfoque = function () {
+          tarjeta.dispatchEvent(
+            new CustomEvent('cuadra:enfocar', {
+              bubbles: true,
+              detail: { cuadra: item.cuadra }
+            })
+          );
+        };
+        tarjeta.addEventListener('click', emitirEnfoque);
+        tarjeta.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault();
+            emitirEnfoque();
+          }
+        });
+
         fila.appendChild(tarjeta);
         lista.appendChild(fila);
       });

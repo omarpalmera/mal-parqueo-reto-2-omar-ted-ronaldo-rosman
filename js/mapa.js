@@ -7,7 +7,8 @@
 (function (global) {
   'use strict';
 
-  var CENTRO_SANTA_MARTA = [11.2421, -74.2105];
+  var CENTRO_SANTA_MARTA = [11.2434, -74.2112];
+  var CENTRO_TABLERO = [11.2432, -74.2115];
   var ZOOM_INICIAL = 16;
 
   var mapOperativo = null;
@@ -82,10 +83,11 @@
     if (!Array.isArray(viasData) || viasData.length === 0) return null;
     var mejor = viasData[0];
     var menorDist = Infinity;
+    var cosLat = Math.cos((Number(lat) * Math.PI) / 180);
     for (var i = 0; i < viasData.length; i++) {
       var v = viasData[i];
-      var dLat = lat - Number(v.lat);
-      var dLng = lng - Number(v.lng);
+      var dLat = Number(lat) - Number(v.lat);
+      var dLng = (Number(lng) - Number(v.lng)) * cosLat;
       var dist2 = dLat * dLat + dLng * dLng;
       if (dist2 < menorDist) {
         menorDist = dist2;
@@ -160,7 +162,7 @@
     if (mapOperativo) return mapOperativo;
 
     mapOperativo = L.map('map', {
-      center: [11.2413, -74.2112],
+      center: CENTRO_TABLERO,
       zoom: ZOOM_INICIAL
     });
 
@@ -177,24 +179,28 @@
    * Crea el contenido del punto con los datos de su reporte.
    */
   function construirPopup(rep, viaInfo) {
-    var resultado = rep.criticidad;
-    var d = resultado.desglose;
+    var resultado = rep && rep.criticidad ? rep.criticidad : {};
+    var d = resultado.desglose || {};
+    var nivelTexto = resultado.nivel ? String(resultado.nivel) : 'Bajo';
+    var puntajeNum = typeof resultado.puntaje === 'number' ? resultado.puntaje : 0;
+
     var popup = document.createElement('div');
     popup.className = 'map-popup';
     var via = document.createElement('strong');
-    via.textContent = viaInfo ? viaInfo.nombre : rep.cuadra;
+    via.textContent = viaInfo ? viaInfo.nombre : (rep.cuadra || 'Sin cuadra');
     var nivel = document.createElement('span');
-    nivel.className = 'pill-nivel pill-' + resultado.nivel.toLowerCase();
-    nivel.textContent = 'Nivel ' + resultado.nivel.toLowerCase() + ' · ' + resultado.puntaje + ' puntos';
+    nivel.className = 'pill-nivel pill-' + nivelTexto.toLowerCase();
+    nivel.textContent = 'Nivel ' + nivelTexto.toLowerCase() + ' · ' + puntajeNum + ' puntos';
     var incidente = document.createElement('p');
     incidente.textContent = (ETIQUETAS_CAT[rep.categoria] || 'Otra categoría') + ' · ' +
       (ETIQUETAS_ACT[rep.actor] || 'Otro actor');
     var fecha = document.createElement('p');
-    fecha.textContent = rep.id + ' · ' + String(rep.fecha_hora).replace('T', ' ');
+    fecha.textContent = (rep.id || 'Sin ID') + ' · ' + String(rep.fecha_hora || '').replace('T', ' ');
     var factores = document.createElement('ul');
     factores.className = 'score-pills';
-    ['Categoría · ' + d.ptsCategoria, 'Vía ' + d.tipoVia + ' · ' + d.ptsVia,
-      'Hora ' + d.franja + ' · ' + d.ptsFranja].forEach(function (texto) {
+    ['Categoría · ' + (d.ptsCategoria != null ? d.ptsCategoria : 0),
+      'Vía ' + (d.tipoVia || '-') + ' · ' + (d.ptsVia != null ? d.ptsVia : 0),
+      'Hora ' + (d.franja || '-') + ' · ' + (d.ptsFranja != null ? d.ptsFranja : 0)].forEach(function (texto) {
       var chip = document.createElement('li');
       chip.textContent = texto;
       factores.appendChild(chip);
@@ -218,7 +224,7 @@
    * @param {Object} criteriosData
    * @param {'ambas'|'calor'|'puntos'} modoCapa
    */
-  function actualizarCapasMapa(reportesFiltrados, viasData, criteriosData, modoCapa) {
+  function actualizarCapasMapa(reportesFiltrados, viasData, criteriosData, modoCapa, opciones) {
     ultimoEstadoCapas = {
       reportes: Array.isArray(reportesFiltrados) ? reportesFiltrados : [],
       viasData: Array.isArray(viasData) ? viasData : [],
@@ -226,7 +232,8 @@
       modo: modoCapa || 'ambas'
     };
 
-    if (!document.getElementById('map').clientWidth) return;
+    var mapEl = document.getElementById('map');
+    if (!mapEl || !mapEl.clientWidth) return;
     if (!inicializarMapaOperativo()) return;
 
     var viasPorId = {};
@@ -295,11 +302,11 @@
       tamanoMapa.y > 0
     ) {
       capaCalor = L.heatLayer(puntosCalor, {
-        radius: 28,
-        blur: 18,
+        radius: 32,
+        blur: 22,
         maxZoom: 17,
         max: 1.0,
-        minOpacity: 0.35,
+        minOpacity: 0.4,
         gradient: {
           0.25: '#22c55e',
           0.55: '#f59e0b',
@@ -307,6 +314,56 @@
           1.0: '#991b1b'
         }
       }).addTo(mapOperativo);
+    }
+
+    if (opciones && opciones.ajustarVista && puntosCalor.length > 0) {
+      var coords = puntosCalor.map(function (p) { return [p[0], p[1]]; });
+      var limites = L.latLngBounds(coords);
+      if (limites.isValid()) {
+        mapOperativo.fitBounds(limites, { padding: [36, 36], maxZoom: 17, animate: true });
+      }
+    }
+  }
+
+  /**
+   * Enfoca suavemente el mapa operativo sobre una cuadra específica (al pulsar una tarjeta del Top 5).
+   * @param {string} cuadraId
+   * @param {Array} viasData
+   * @param {Array} reportesFiltrados
+   */
+  function enfocarCuadra(cuadraId, viasData, reportesFiltrados) {
+    if (!cuadraId || !inicializarMapaOperativo()) return;
+
+    var puntosCuadra = [];
+    if (Array.isArray(reportesFiltrados)) {
+      for (var i = 0; i < reportesFiltrados.length; i++) {
+        var r = reportesFiltrados[i];
+        if (r && r.cuadra === cuadraId && !isNaN(Number(r.lat)) && !isNaN(Number(r.lng))) {
+          puntosCuadra.push([Number(r.lat), Number(r.lng)]);
+        }
+      }
+    }
+
+    if (puntosCuadra.length > 1) {
+      mapOperativo.flyToBounds(L.latLngBounds(puntosCuadra), {
+        padding: [48, 48],
+        maxZoom: 18,
+        duration: 0.6
+      });
+    } else if (puntosCuadra.length === 1) {
+      mapOperativo.flyTo(puntosCuadra[0], 18, { duration: 0.6 });
+    } else if (Array.isArray(viasData)) {
+      for (var v = 0; v < viasData.length; v++) {
+        if (viasData[v] && (viasData[v].id === cuadraId || viasData[v].codigo === cuadraId)) {
+          mapOperativo.flyTo([Number(viasData[v].lat), Number(viasData[v].lng)], 17, { duration: 0.6 });
+          break;
+        }
+      }
+    }
+
+    var mapEl = document.getElementById('map');
+    if (mapEl && typeof mapEl.scrollIntoView === 'function') {
+      mapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }
 
@@ -341,6 +398,7 @@
     encontrarCuadraMasCercana: encontrarCuadraMasCercana,
     inicializarMapaOperativo: inicializarMapaOperativo,
     actualizarCapasMapa: actualizarCapasMapa,
+    enfocarCuadra: enfocarCuadra,
     refrescarTamanoMapa: refrescarTamanoMapa
   };
 
