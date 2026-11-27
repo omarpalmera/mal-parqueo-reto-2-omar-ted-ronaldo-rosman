@@ -585,7 +585,24 @@
             aplicarCoordenadas(lat, lng, 'GPS detectado', viaCercana);
             global.MapaMovilidad.actualizarPinMiniMapa(lat, lng);
 
-            var fueraZona = lat < 11.2390 || lat > 11.2460 || lng < -74.2150 || lng > -74.2070;
+            var minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+            for (var z = 0; z < ESTADO.vias.length; z++) {
+              var vz = ESTADO.vias[z];
+              var vLat = Number(vz && vz.lat);
+              var vLng = Number(vz && vz.lng);
+              if (isNaN(vLat) || isNaN(vLng)) continue;
+              if (vLat < minLat) minLat = vLat;
+              if (vLat > maxLat) maxLat = vLat;
+              if (vLng < minLng) minLng = vLng;
+              if (vLng > maxLng) maxLng = vLng;
+            }
+            var margenZona = 0.0023; // ~250 m alrededor del polígono real de datos/vias.json
+            var fueraZona = isFinite(minLat)
+              ? lat < minLat - margenZona ||
+                lat > maxLat + margenZona ||
+                lng < minLng - margenZona ||
+                lng > maxLng + margenZona
+              : false;
             if (fueraZona) {
               mostrarMensaje(
                 bannerGpsId,
