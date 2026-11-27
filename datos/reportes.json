@@ -2,7 +2,7 @@
   {
     "id": "MP-LOCAL-1795762176117-T6VG",
     "origen": "ciudadano",
-    "fecha_hora": "2026-11-23T10:46",
+    "fecha_hora": "2026-11-23T08:46",
     "lat": 11.244398,
     "lng": -74.209197,
     "cuadra": "CR5-C14-C15",
@@ -88,12 +88,12 @@
     }
   },
   {
-    "id": "MP-LOCAL-1795762971250-LGIG",
+    "id": "MP-LOCAL-1795776985987-HHFD",
     "origen": "ciudadano",
-    "fecha_hora": "2026-11-25T17:08",
-    "lat": 11.243599,
-    "lng": -74.210085,
-    "cuadra": "CR5-C15-C16",
+    "fecha_hora": "2026-11-25T19:20",
+    "lat": 11.242015,
+    "lng": -74.213682,
+    "cuadra": "CL22-CR1-CR2",
     "categoria": "bloqueo_rampa_cebra_paradero",
     "actor": "vehiculo_particular",
     "foto": "datos/fotos/mp-005.jpg",
@@ -442,7 +442,7 @@
   {
     "id": "MP-LOCAL-1795770247111-EUNN",
     "origen": "ciudadano",
-    "fecha_hora": "2026-11-26T11:40",
+    "fecha_hora": "2026-11-36T11:40",
     "lat": 11.24503,
     "lng": -74.214336,
     "cuadra": "CR3-C16-C17",
@@ -486,7 +486,7 @@
   {
     "id": "MP-LOCAL-1795770442557-SQSM",
     "origen": "ciudadano",
-    "fecha_hora": "2026-11-26T09:47",
+    "fecha_hora": "2026-11-26T11:47",
     "lat": 11.242924,
     "lng": -74.212829,
     "cuadra": "CL17-CR3-CR4",
@@ -508,7 +508,7 @@
   {
     "id": "MP-LOCAL-1795770504972-Q3WF",
     "origen": "ciudadano",
-    "fecha_hora": "2026-11-26T11:10",
+    "fecha_hora": "2026-11-26T11:30",
     "lat": 11.243588,
     "lng": -74.21373,
     "cuadra": "CR3-C16-C17",
@@ -596,7 +596,7 @@
   {
     "id": "MP-LOCAL-1795770823808-ZQEG",
     "origen": "ciudadano",
-    "fecha_hora": "2026-11-26T11:29",
+    "fecha_hora": "2026-11-26T11:9",
     "lat": 11.245151,
     "lng": -74.213312,
     "cuadra": "CR3-C16-C17",
