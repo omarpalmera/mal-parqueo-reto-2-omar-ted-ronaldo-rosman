@@ -10,7 +10,7 @@ Cada integrante lidera un frente técnico y de campo, manteniendo trazabilidad i
 
 | Rol oficial | Responsabilidad principal | Integrante asignado | Usuario GitHub |
 | :--- | :--- | :--- | :--- |
-| **Analista de campo y privacidad** | Clasificación de las 8 cuadras en `datos/vias.json`, recorridos en hora pico y valle, georreferenciación de los 30 registros y anonimización de fotos (Ley 1581 de 2012). | Rosman David Prada Arellana | rxsmnt |
+| **Analista de campo y privacidad** | Clasificación de las 9 cuadras en `datos/vias.json`, recorridos en hora pico y valle, georreferenciación de los 30 registros y anonimización de fotos (Ley 1581 de 2012). | Rosman David Prada Arellana | rxsmnt |
 | **Integrador del mapa e instrucciones para la IA** | Integración de Leaflet, mapa de calor `Leaflet.heat` sobre OpenStreetMap, capa de puntos individuales y diseño de prompts. | *Teddy Daniel Niño Rojas* | @elnigro1553 |
 | **Ingeniero de lógica y clasificación** | Diseño del índice de criticidad (`js/criticidad.js`, `datos/criterios.json`), motor de filtros (`js/filtros.js`) y reglas de recomendación (`js/resumen.js`). | *Teddy Daniel Niño Rojas* | @elnigro1553 |
 | **Diseñador de interfaz y documentador** | Formulario de captura rápida (< 30 s), tablero responsivo, estilos de impresión `@media print`, bitácora de iteración y `README.md`. | *Omar Palmera* | `@omarpalmera` |
@@ -33,7 +33,7 @@ Cada integrante lidera un frente técnico y de campo, manteniendo trazabilidad i
 │   └── captura.js           # Carga fetch(), formulario <30s, compresión canvas 800px y RF-06
 └── datos/
     ├── criterios.json       # Pesos por categoría, tipo de vía, franja, horas pico y rangos
-    ├── vias.json            # 8 cuadras reales del Centro Histórico y Av. Campo Serrano
+    ├── vias.json            # 9 cuadras reales del Centro Histórico, Av. Campo Serrano y Av. Santa Rita
     ├── reportes.json        # 30 registros de campo distribuidos en hora pico y valle
     └── fotos/               # Muestras gráficas anonimizadas sin placas ni rostros
 ```
@@ -55,15 +55,15 @@ Cada integrante lidera un frente técnico y de campo, manteniendo trazabilidad i
 
 ### Casos de Verificación Manual (RF-02)
 
-1. **Caso `MP-014`** (`CR5-C14-C15`, `2026-11-18T11:40`, `invasion_anden`):
+1. **Caso `MP-LOCAL-1795770650258-D4KR` (`datos/fotos/mp-026.jpg`)** (`CR5-C17-C18`, `2026-11-26T12:10`, `invasion_anden`):
    - Categoría `invasion_anden`: **2**
-   - Vía `arterial` (Av. Campo Serrano): **3**
-   - Franja `pico` (11:40 dentro de `11:30-14:00`): **3**
+   - Vía `arterial` (Av. Campo Serrano entre Calles 17 y 18): **3**
+   - Franja `pico` (12:10 dentro de `11:30-14:00`): **3**
    - **Total:** `2 + 3 + 3 = 8 puntos` → **Nivel Alto** (rango `[7, 9]`).
-2. **Caso `MP-026`** (`CL17-CR3-CR4`, `2026-11-19T10:05`, `invasion_anden`):
+2. **Caso `MP-LOCAL-1795766731995-V15N` (`datos/fotos/mp-020.jpg`)** (`CR4-C15-C16`, `2026-11-25T15:36`, `invasion_anden`):
    - Categoría `invasion_anden`: **2**
-   - Vía `secundaria` (Calle 17 - Parque de los Novios): **1**
-   - Franja `valle` (10:05 fuera de horas pico): **1**
+   - Vía `secundaria` (Carrera 4 entre Calles 15 y 16 - Centro Bancario): **1**
+   - Franja `valle` (15:36 fuera de horas pico): **1**
    - **Total:** `2 + 1 + 1 = 4 puntos` → **Nivel Bajo** (rango `[0, 4]`).
 
 ---
