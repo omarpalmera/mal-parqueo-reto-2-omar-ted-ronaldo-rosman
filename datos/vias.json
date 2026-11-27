@@ -70,5 +70,14 @@
     "tipo_via": "arterial",
     "lat": 11.240177,
     "lng": -74.210555
+  },
+  {
+    "id": "CL22-CR1-CR2",
+    "codigo": "CL22-CR1-CR2",
+    "nombre": "Av. Santa Rita (Calle 22) entre Carreras 1 y 2",
+    "sector": "Centro Histórico",
+    "tipo_via": "arterial",
+    "lat": 11.24129,
+    "lng": -74.21515
   }
 ]
