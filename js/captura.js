@@ -23,6 +23,7 @@
     reportesLocales: [],
     reportesConsolidados: [],
     fotoBase64Actual: '',
+    fotoVerificada: true,
     modoCapa: 'ambas',
     filtros: {
       sector: 'todos',
@@ -658,7 +659,10 @@
       verificacion.hidden = !hayFoto;
     }
 
-    aceptar.addEventListener('click', () => { verificacion.hidden = true; });
+    aceptar.addEventListener('click', () => {
+      verificacion.hidden = true;
+      preview.dispatchEvent(new CustomEvent('foto:anonimizada', { bubbles: true }));
+    });
     fino.addEventListener('click', () => elegirGrosor(false));
     grueso.addEventListener('click', () => elegirGrosor(true));
     abrir.addEventListener('click', async () => {
@@ -798,6 +802,7 @@
 
     function mostrarFoto(dataUrl) {
       ESTADO.fotoBase64Actual = dataUrl;
+      ESTADO.fotoVerificada = !dataUrl || !document.getElementById('foto-verificacion');
       if (previewFoto) {
         if (dataUrl) previewFoto.src = dataUrl;
         else previewFoto.removeAttribute('src');
@@ -807,6 +812,30 @@
       if (btnLimpiarFoto) btnLimpiarFoto.hidden = !dataUrl;
       if (confirmarQuitar) confirmarQuitar.hidden = true;
       if (inputFoto) inputFoto.value = '';
+    }
+
+    if (previewFoto) {
+      previewFoto.addEventListener('foto:anonimizada', function () {
+        if (!ESTADO.fotoBase64Actual) return;
+        ESTADO.fotoVerificada = true;
+        var kb = Math.round((ESTADO.fotoBase64Actual.length * 0.75) / 1024);
+        if (infoFoto) {
+          infoFoto.textContent = 'Foto confirmada como anonimizada (~' + kb + ' KB). Lista para guardar.';
+        }
+        mostrarMensaje('captura-estado', '', '');
+      });
+
+      previewFoto.addEventListener('foto:pixelada', function (e) {
+        var dataUrl = e && e.detail && typeof e.detail.dataUrl === 'string' ? e.detail.dataUrl : '';
+        if (!dataUrl) return;
+        ESTADO.fotoBase64Actual = dataUrl;
+        ESTADO.fotoVerificada = true;
+        var kb = Math.round((dataUrl.length * 0.75) / 1024);
+        if (infoFoto) {
+          infoFoto.textContent = 'Foto pixelada lista para guardar (~' + kb + ' KB). Sin placas ni rostros visibles.';
+        }
+        mostrarMensaje('captura-estado', '', '');
+      });
     }
 
     async function cargarFoto(archivo) {
@@ -923,6 +952,28 @@
         if (!validacionFecha.valida) {
           mostrarMensaje('captura-estado', validacionFecha.motivo, 'error');
           if (inputFecha) inputFecha.focus();
+          return;
+        }
+
+        if (ESTADO.fotoBase64Actual && !ESTADO.fotoVerificada) {
+          var editorEl = document.getElementById('editor-pixelado');
+          var btnAceptarFoto = document.getElementById('btn-foto-anonimizada');
+          var btnAplicarPix = document.getElementById('btn-aplicar-pixelado');
+          if (editorEl && !editorEl.hidden) {
+            mostrarMensaje(
+              'captura-estado',
+              'Termina de pixelar la foto y pulsa "Listo" antes de registrar el reporte.',
+              'warning'
+            );
+            if (btnAplicarPix && !btnAplicarPix.disabled) btnAplicarPix.focus();
+          } else {
+            mostrarMensaje(
+              'captura-estado',
+              'Confirma si la foto ya está anonimizada o pixélala antes de registrar el reporte (Ley 1581 de 2012).',
+              'warning'
+            );
+            if (btnAceptarFoto) btnAceptarFoto.focus();
+          }
           return;
         }
 
