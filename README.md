@@ -15,7 +15,7 @@ Cada integrante lidera un frente técnico y de campo, manteniendo trazabilidad i
 | **Ingeniero de lógica y clasificación** | Diseño del índice de criticidad (`js/criticidad.js`, `datos/criterios.json`), motor de filtros (`js/filtros.js`) y reglas de recomendación (`js/resumen.js`). | *Teddy Daniel Niño Rojas* | @elnigro1553 |
 | **Diseñador de interfaz y documentador** | Formulario de captura rápida (< 30 s), tablero responsivo, estilos de impresión `@media print`, bitácora de iteración y `README.md`. | *Omar Palmera* | `@omarpalmera` |
 
-> **Enlace al prototipo publicado (GitHub Pages):** `https://<usuario-o-org>.github.io/<nombre-del-repositorio>/` *(Actualizar al activar GitHub Pages)*.
+> **Enlace al prototipo publicado (GitHub Pages):** `https://omarpalmera.github.io/mal-parqueo-reto-2-omar-ted-ronaldo-rosman/`-
 
 ---
 
