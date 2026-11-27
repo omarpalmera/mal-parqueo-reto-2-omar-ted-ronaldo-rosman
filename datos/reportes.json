@@ -1,1 +1,662 @@
-[]
+[
+  {
+    "id": "MP-LOCAL-1795762176117-T6VG",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-23T10:46",
+    "lat": 11.244398,
+    "lng": -74.209197,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-001.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795762556304-59F1",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T19:57",
+    "lat": 11.242548,
+    "lng": -74.210034,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-002.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795762657334-865Y",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T19:53",
+    "lat": 11.240821,
+    "lng": -74.210114,
+    "cuadra": "CR5-C15-C16",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-003.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795762864805-3G96",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T17:08",
+    "lat": 11.243599,
+    "lng": -74.210085,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "motocicleta",
+    "foto": "datos/fotos/mp-004.jpg",
+    "criticidad": {
+      "puntaje": 9,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 3,
+        "tipoVia": "arterial",
+        "franja": "pico"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795762971250-LGIG",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T17:08",
+    "lat": 11.243599,
+    "lng": -74.210085,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-005.jpg",
+    "criticidad": {
+      "puntaje": 9,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 3,
+        "tipoVia": "arterial",
+        "franja": "pico"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795763308806-XO9C",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:26",
+    "lat": 11.243688,
+    "lng": -74.208236,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_carga",
+    "foto": "datos/fotos/mp-006.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795763480892-HT63",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T16:04",
+    "lat": 11.239592,
+    "lng": -74.210753,
+    "cuadra": "CL22-CR5-CR6",
+    "categoria": "invasion_anden",
+    "actor": "mobiliario_comercial",
+    "foto": "datos/fotos/mp-007.jpg",
+    "criticidad": {
+      "puntaje": 6,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 2,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795763564235-740E",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:30",
+    "lat": 11.243472,
+    "lng": -74.20865,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "invasion_anden",
+    "actor": "motocicleta",
+    "foto": "datos/fotos/mp-008.jpg",
+    "criticidad": {
+      "puntaje": 6,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 2,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795763962150-1L9G",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T16:50",
+    "lat": 11.244292,
+    "lng": -74.208757,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "motocicleta",
+    "foto": "datos/fotos/mp-009.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795764104348-51TV",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:05",
+    "lat": 11.243062,
+    "lng": -74.210173,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "doble_fila",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-010.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795764229219-UKA4",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T16:05",
+    "lat": 11.239424,
+    "lng": -74.210388,
+    "cuadra": "CL22-CR5-CR6",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-011.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795764745884-KOPG",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:10",
+    "lat": 11.243516,
+    "lng": -74.20972,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "invasion_anden",
+    "actor": "motocicleta",
+    "foto": "datos/fotos/mp-012.jpg",
+    "criticidad": {
+      "puntaje": 6,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 2,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795764820491-O0UQ",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T16:03",
+    "lat": 11.239803,
+    "lng": -74.211118,
+    "cuadra": "CR5-C17-C18",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-013.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795766250498-6XYR",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:52",
+    "lat": 11.243452,
+    "lng": -74.213392,
+    "cuadra": "CR3-C16-C17",
+    "categoria": "doble_fila",
+    "actor": "motocicleta",
+    "foto": "datos/fotos/mp-014.jpg",
+    "criticidad": {
+      "puntaje": 5,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 1,
+        "ptsFranja": 1,
+        "tipoVia": "secundaria",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795766333544-1ZHF",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:39",
+    "lat": 11.243347,
+    "lng": -74.212598,
+    "cuadra": "CL14-CR4-CR5",
+    "categoria": "doble_fila",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-015.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795766392519-9UG8",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T16:02",
+    "lat": 11.240455,
+    "lng": -74.211043,
+    "cuadra": "CR5-C17-C18",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "motocicleta",
+    "foto": "datos/fotos/mp-016.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795766491022-VKF1",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:53",
+    "lat": 11.243,
+    "lng": -74.213349,
+    "cuadra": "CR3-C16-C17",
+    "categoria": "doble_fila",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-017.jpg",
+    "criticidad": {
+      "puntaje": 5,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 1,
+        "ptsFranja": 1,
+        "tipoVia": "secundaria",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795766592997-XECX",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:15",
+    "lat": 11.243446,
+    "lng": -74.209361,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-018.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795766686212-M7NE",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:20",
+    "lat": 11.24453,
+    "lng": -74.210123,
+    "cuadra": "CL14-CR4-CR5",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-019.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795766731995-V15N",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T15:36",
+    "lat": 11.243205,
+    "lng": -74.211303,
+    "cuadra": "CL14-CR4-CR5",
+    "categoria": "invasion_anden",
+    "actor": "motocicleta",
+    "foto": "datos/fotos/mp-020.jpg",
+    "criticidad": {
+      "puntaje": 6,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 2,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795770247111-EUNN",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-26T11:40",
+    "lat": 11.24503,
+    "lng": -74.214336,
+    "cuadra": "CR3-C16-C17",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-021.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 1,
+        "ptsFranja": 3,
+        "tipoVia": "secundaria",
+        "franja": "pico"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795770310407-4YD9",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-23T19:04",
+    "lat": 11.241344,
+    "lng": -74.215549,
+    "cuadra": "CR3-C16-C17",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-022.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 1,
+        "ptsFranja": 3,
+        "tipoVia": "secundaria",
+        "franja": "pico"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795770442557-SQSM",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-26T09:47",
+    "lat": 11.242924,
+    "lng": -74.212829,
+    "cuadra": "CR3-C16-C17",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "mobiliario_comercial",
+    "foto": "datos/fotos/mp-023.jpg",
+    "criticidad": {
+      "puntaje": 5,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 1,
+        "ptsFranja": 1,
+        "tipoVia": "secundaria",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795770504972-Q3WF",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-26T11:10",
+    "lat": 11.243588,
+    "lng": -74.21373,
+    "cuadra": "CR3-C16-C17",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "motocicleta",
+    "foto": "datos/fotos/mp-024.jpg",
+    "criticidad": {
+      "puntaje": 5,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 1,
+        "ptsFranja": 1,
+        "tipoVia": "secundaria",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795770596811-GHRA",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-26T11:36",
+    "lat": 11.242093,
+    "lng": -74.210898,
+    "cuadra": "CR5-C14-C15",
+    "categoria": "invasion_anden",
+    "actor": "motocicleta",
+    "foto": "datos/fotos/mp-025.jpg",
+    "criticidad": {
+      "puntaje": 8,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 2,
+        "ptsVia": 3,
+        "ptsFranja": 3,
+        "tipoVia": "arterial",
+        "franja": "pico"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795770650258-D4KR",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-26T12:10",
+    "lat": 11.243225,
+    "lng": -74.210511,
+    "cuadra": "CL14-CR4-CR5",
+    "categoria": "invasion_anden",
+    "actor": "mobiliario_comercial",
+    "foto": "datos/fotos/mp-026.jpg",
+    "criticidad": {
+      "puntaje": 8,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 2,
+        "ptsVia": 3,
+        "ptsFranja": 3,
+        "tipoVia": "arterial",
+        "franja": "pico"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795770689482-LV00",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T20:10",
+    "lat": 11.241268,
+    "lng": -74.214846,
+    "cuadra": "CR3-C16-C17",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-027.jpg",
+    "criticidad": {
+      "puntaje": 5,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 1,
+        "ptsFranja": 1,
+        "tipoVia": "secundaria",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795770823808-ZQEG",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-26T11:29",
+    "lat": 11.245151,
+    "lng": -74.213312,
+    "cuadra": "CL14-CR4-CR5",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-028.jpg",
+    "criticidad": {
+      "puntaje": 7,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 1,
+        "tipoVia": "arterial",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795770870111-SW58",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T16:46",
+    "lat": 11.241219,
+    "lng": -74.212593,
+    "cuadra": "CL17-CR3-CR4",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-029.jpg",
+    "criticidad": {
+      "puntaje": 5,
+      "nivel": "Medio",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 1,
+        "ptsFranja": 1,
+        "tipoVia": "secundaria",
+        "franja": "valle"
+      }
+    }
+  },
+  {
+    "id": "MP-LOCAL-1795771327146-4KO2",
+    "origen": "ciudadano",
+    "fecha_hora": "2026-11-25T17:32",
+    "lat": 11.24696,
+    "lng": -74.212137,
+    "cuadra": "CL14-CR4-CR5",
+    "categoria": "bloqueo_rampa_cebra_paradero",
+    "actor": "vehiculo_particular",
+    "foto": "datos/fotos/mp-030.jpg",
+    "criticidad": {
+      "puntaje": 9,
+      "nivel": "Alto",
+      "desglose": {
+        "ptsCategoria": 3,
+        "ptsVia": 3,
+        "ptsFranja": 3,
+        "tipoVia": "arterial",
+        "franja": "pico"
+      }
+    }
+  }
+]
