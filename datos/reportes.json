@@ -1,8 +1,8 @@
 [
   {
     "id": "MP-LOCAL-1795762176117-T6VG",
-    "origen": "ciudadano",
-    "fecha_hora": "2026-11-23T08:46",
+    "origen": "campo",
+    "fecha_hora": "2026-11-23T08:26",
     "lat": 11.244415,
     "lng": -74.210365,
     "cuadra": "CR5-C14-C15",
@@ -10,20 +10,20 @@
     "actor": "vehiculo_particular",
     "foto": "datos/fotos/mp-001.jpg",
     "criticidad": {
-      "puntaje": 7,
+      "puntaje": 9,
       "nivel": "Alto",
       "desglose": {
         "ptsCategoria": 3,
         "ptsVia": 3,
-        "ptsFranja": 1,
+        "ptsFranja": 3,
         "tipoVia": "arterial",
-        "franja": "valle"
+        "franja": "pico"
       }
     }
   },
   {
     "id": "MP-LOCAL-1795762556304-59F1",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T19:57",
     "lat": 11.242548,
     "lng": -74.210034,
@@ -45,7 +45,7 @@
   },
   {
     "id": "MP-LOCAL-1795762657334-865Y",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T19:53",
     "lat": 11.240821,
     "lng": -74.210114,
@@ -67,7 +67,7 @@
   },
   {
     "id": "MP-LOCAL-1795762864805-3G96",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T17:08",
     "lat": 11.243599,
     "lng": -74.210085,
@@ -89,7 +89,7 @@
   },
   {
     "id": "MP-LOCAL-1795776985987-HHFD",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T19:20",
     "lat": 11.241312,
     "lng": -74.215025,
@@ -111,7 +111,7 @@
   },
   {
     "id": "MP-LOCAL-1795763308806-XO9C",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:26",
     "lat": 11.244012,
     "lng": -74.210445,
@@ -133,7 +133,7 @@
   },
   {
     "id": "MP-LOCAL-1795763480892-HT63",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T16:04",
     "lat": 11.239592,
     "lng": -74.210753,
@@ -155,7 +155,7 @@
   },
   {
     "id": "MP-LOCAL-1795763564235-740E",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:30",
     "lat": 11.243735,
     "lng": -74.210505,
@@ -177,7 +177,7 @@
   },
   {
     "id": "MP-LOCAL-1795763962150-1L9G",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T16:50",
     "lat": 11.244165,
     "lng": -74.210425,
@@ -199,7 +199,7 @@
   },
   {
     "id": "MP-LOCAL-1795764104348-51TV",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:05",
     "lat": 11.243062,
     "lng": -74.210173,
@@ -221,7 +221,7 @@
   },
   {
     "id": "MP-LOCAL-1795764229219-UKA4",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T16:05",
     "lat": 11.239424,
     "lng": -74.210388,
@@ -243,7 +243,7 @@
   },
   {
     "id": "MP-LOCAL-1795764745884-KOPG",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:10",
     "lat": 11.243516,
     "lng": -74.20972,
@@ -265,7 +265,7 @@
   },
   {
     "id": "MP-LOCAL-1795764820491-O0UQ",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T16:03",
     "lat": 11.239803,
     "lng": -74.211118,
@@ -287,7 +287,7 @@
   },
   {
     "id": "MP-LOCAL-1795766250498-6XYR",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:52",
     "lat": 11.243452,
     "lng": -74.213392,
@@ -309,7 +309,7 @@
   },
   {
     "id": "MP-LOCAL-1795766333544-1ZHF",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:39",
     "lat": 11.243347,
     "lng": -74.212598,
@@ -331,7 +331,7 @@
   },
   {
     "id": "MP-LOCAL-1795766392519-9UG8",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T16:02",
     "lat": 11.240455,
     "lng": -74.211043,
@@ -353,7 +353,7 @@
   },
   {
     "id": "MP-LOCAL-1795766491022-VKF1",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:53",
     "lat": 11.243515,
     "lng": -74.212815,
@@ -375,7 +375,7 @@
   },
   {
     "id": "MP-LOCAL-1795766592997-XECX",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:15",
     "lat": 11.243565,
     "lng": -74.210245,
@@ -397,7 +397,7 @@
   },
   {
     "id": "MP-LOCAL-1795766686212-M7NE",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:20",
     "lat": 11.24453,
     "lng": -74.210123,
@@ -419,29 +419,29 @@
   },
   {
     "id": "MP-LOCAL-1795766731995-V15N",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T15:36",
-    "lat": 11.243205,
-    "lng": -74.211303,
-    "cuadra": "CR5-C17-C18",
+    "lat": 11.243895,
+    "lng": -74.211495,
+    "cuadra": "CR4-C15-C16",
     "categoria": "invasion_anden",
     "actor": "motocicleta",
     "foto": "datos/fotos/mp-020.jpg",
     "criticidad": {
-      "puntaje": 6,
-      "nivel": "Medio",
+      "puntaje": 4,
+      "nivel": "Bajo",
       "desglose": {
         "ptsCategoria": 2,
-        "ptsVia": 3,
+        "ptsVia": 1,
         "ptsFranja": 1,
-        "tipoVia": "arterial",
+        "tipoVia": "secundaria",
         "franja": "valle"
       }
     }
   },
   {
     "id": "MP-LOCAL-1795770247111-EUNN",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-26T11:40",
     "lat": 11.243915,
     "lng": -74.212705,
@@ -463,7 +463,7 @@
   },
   {
     "id": "MP-LOCAL-1795770310407-4YD9",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-23T19:04",
     "lat": 11.241344,
     "lng": -74.215549,
@@ -485,7 +485,7 @@
   },
   {
     "id": "MP-LOCAL-1795770442557-SQSM",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-26T11:47",
     "lat": 11.242924,
     "lng": -74.212829,
@@ -507,7 +507,7 @@
   },
   {
     "id": "MP-LOCAL-1795770504972-Q3WF",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-26T11:30",
     "lat": 11.243645,
     "lng": -74.212785,
@@ -529,7 +529,7 @@
   },
   {
     "id": "MP-LOCAL-1795770596811-GHRA",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-26T11:36",
     "lat": 11.242093,
     "lng": -74.210898,
@@ -551,7 +551,7 @@
   },
   {
     "id": "MP-LOCAL-1795770650258-D4KR",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-26T12:10",
     "lat": 11.243225,
     "lng": -74.210511,
@@ -573,7 +573,7 @@
   },
   {
     "id": "MP-LOCAL-1795770689482-LV00",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T20:10",
     "lat": 11.241268,
     "lng": -74.214846,
@@ -595,7 +595,7 @@
   },
   {
     "id": "MP-LOCAL-1795770823808-ZQEG",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-26T11:39",
     "lat": 11.243818,
     "lng": -74.212732,
@@ -617,7 +617,7 @@
   },
   {
     "id": "MP-LOCAL-1795770870111-SW58",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T16:46",
     "lat": 11.243315,
     "lng": -74.212015,
@@ -639,7 +639,7 @@
   },
   {
     "id": "MP-LOCAL-1795771327146-4KO2",
-    "origen": "ciudadano",
+    "origen": "campo",
     "fecha_hora": "2026-11-25T17:32",
     "lat": 11.244685,
     "lng": -74.210965,
