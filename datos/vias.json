@@ -1,0 +1,74 @@
+[
+  {
+    "id": "CR5-C14-C15",
+    "codigo": "CR5-C14-C15",
+    "nombre": "Av. Campo Serrano (Cra 5) entre Calles 14 y 15",
+    "sector": "Av. Campo Serrano",
+    "tipo_via": "arterial",
+    "lat": 11.24433,
+    "lng": -74.210397
+  },
+  {
+    "id": "CR5-C15-C16",
+    "codigo": "CR5-C15-C16",
+    "nombre": "Av. Campo Serrano (Cra 5) entre Calles 15 y 16",
+    "sector": "Av. Campo Serrano",
+    "tipo_via": "arterial",
+    "lat": 11.243859,
+    "lng": -74.210487
+  },
+  {
+    "id": "CR5-C17-C18",
+    "codigo": "CR5-C17-C18",
+    "nombre": "Av. Campo Serrano (Cra 5) entre Calles 17 y 18",
+    "sector": "Av. Campo Serrano",
+    "tipo_via": "arterial",
+    "lat": 11.2429,
+    "lng": -74.210634
+  },
+  {
+    "id": "CL14-CR4-CR5",
+    "codigo": "CL14-CR4-CR5",
+    "nombre": "Calle 14 entre Carreras 4 y 5 (Centro Histórico)",
+    "sector": "Centro Histórico",
+    "tipo_via": "arterial",
+    "lat": 11.244712,
+    "lng": -74.210836
+  },
+  {
+    "id": "CL17-CR3-CR4",
+    "codigo": "CL17-CR3-CR4",
+    "nombre": "Calle 17 entre Carreras 3 y 4 (Sector Catedral)",
+    "sector": "Centro Histórico",
+    "tipo_via": "secundaria",
+    "lat": 11.243358,
+    "lng": -74.212206
+  },
+  {
+    "id": "CR3-C16-C17",
+    "codigo": "CR3-C16-C17",
+    "nombre": "Carrera 3 entre Calles 16 y 17 (Callejón del Correo)",
+    "sector": "Centro Histórico",
+    "tipo_via": "secundaria",
+    "lat": 11.243729,
+    "lng": -74.212754
+  },
+  {
+    "id": "CR4-C15-C16",
+    "codigo": "CR4-C15-C16",
+    "nombre": "Carrera 4 entre Calles 15 y 16 (Centro Bancario)",
+    "sector": "Centro Histórico",
+    "tipo_via": "secundaria",
+    "lat": 11.244033,
+    "lng": -74.211471
+  },
+  {
+    "id": "CL22-CR5-CR6",
+    "codigo": "CL22-CR5-CR6",
+    "nombre": "Av. Santa Rita (Calle 22) entre Carreras 5 y 6",
+    "sector": "Av. Campo Serrano",
+    "tipo_via": "arterial",
+    "lat": 11.240177,
+    "lng": -74.210555
+  }
+]
